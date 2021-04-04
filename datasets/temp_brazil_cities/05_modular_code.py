@@ -4,6 +4,11 @@ import pandas as pd
 import plotly.graph_objects as go
 import streamlit as st
 
+from vc.data_io import files
+import vc.visuals.plotly_tools.hovertext as pt_hover
+import vc.visuals.plotly_tools.layout as pt_layout
+import vc.visuals.plotly_tools.trace as pt_trace
+
 # Folder path to data files.
 folder_path = r"C:/Data/temperature_time-series_for_brazilian_cities/"
 # Get file names automatically from the folder.
@@ -18,16 +23,7 @@ file_name = st.sidebar.selectbox(
 city_name = file_name[8:-4].replace('_', ' ').title()
 
 # Load data into Pandas DataFrame with first row as column names and first column as index names.
-df = pd.read_csv(
-    folder_path + file_name,
-    header=0,
-    index_col=0
-)
-
-# Remove pre-generated average columns.
-df_crop = df.drop(['D-J-F', 'M-A-M', 'J-J-A', 'S-O-N', 'metANN'], axis=1)
-# Set erroneous values to NaN so they don't disturb the results.
-df_crop[df_crop > 100] = np.nan
+df_crop = files.braz_cities_temp(os.path.join(folder_path, file_name))
 
 # Get all available years from the file and make it into a list.
 year_list = list(df_crop.index)
@@ -42,50 +38,11 @@ mean = df_crop.mean()
 
 # Now you have to create a figure first.
 fig = go.Figure()
-# Create hovertext for selected year.
-text_list = [
-    f"{city_name} {idx.title()} {year}<br>" +
-    f"{item} Deg C"
-    for idx, item in df_crop.loc[year].iteritems()
-]
 # Plot data from selected year with hovertext.
-fig.add_trace(
-    go.Scatter(
-        x=df_crop.columns,
-        y=df_crop.loc[year],
-        hoverinfo='text',
-        hovertext=text_list,
-        name=str(year),
-        mode='lines+markers'
-    )
-)
-
-# Create hovertext for all-years mean.
-text_list = [
-    f"{city_name} {idx.title()} all-years mean<br>" +
-    f"{item} Deg C"
-    for idx, item in df_crop.loc[year].iteritems()
-]
+fig.add_trace(pt_trace.braz_cities_temp(df_crop.loc[year], city_name, year))
 # Plot all-time mean for comparison.
-fig.add_trace(
-    go.Scatter(
-        x=df_crop.columns,
-        y=mean,
-        hoverinfo='text',
-        hovertext=text_list,
-        name='Mean of all years',
-        mode='lines+markers'
-    )
-)
-
+fig.add_trace(pt_trace.braz_cities_temp(mean, city_name, 'Mean of all years'))
 # Make it pretty and informative.
-fig.update_xaxes(title={'text': 'Months'})
-fig.update_yaxes(title={'text': 'Temperature [deg C]'})
-fig.update_layout(
-    title=f"Temperature for {city_name} in {year}",
-    hovermode='x',
-    height=600,
-    width=1100
-)
+fig = pt_layout.braz_cities_temp(fig, city_name, year)
 # Show the figure in the Streamlit app.
 st.plotly_chart(fig)
