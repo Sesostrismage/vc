@@ -2,6 +2,9 @@ import os
 
 import streamlit as st
 
+def settings():
+    st.set_page_config(layout='wide')
+
 def file_name_from_folder(folder_path: str):
     # Get file names automatically from the folder.
     file_name_list = os.listdir(folder_path)
