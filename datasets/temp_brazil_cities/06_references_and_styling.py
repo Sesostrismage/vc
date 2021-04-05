@@ -9,8 +9,6 @@ import vc.visuals.streamlit_tools as stt
 import vc.visuals.plotly_tools.layout as pt_layout
 import vc.visuals.plotly_tools.trace as pt_trace
 
-stt.settings()
-
 # Folder path to data files.
 folder_path = r"C:/Data/temperature_time-series_for_brazilian_cities/"
 # Get file name, city name and file name list.
