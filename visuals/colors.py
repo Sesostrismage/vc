@@ -1,7 +1,7 @@
 cdict = {
     'temperature': {
         'value': 'black',
-        'reference': 'grey',
+        'reference': '#999999',
         'min': 'blue',
         'max': 'red'
     }
