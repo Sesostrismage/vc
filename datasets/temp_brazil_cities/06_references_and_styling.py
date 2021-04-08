@@ -46,42 +46,7 @@ year = st.sidebar.selectbox(
 fig = go.Figure()
 
 if ref_option == 'Min-mean-max shapes':
-    x = list(df.columns) + list(df.columns[::-1])
-    y_min = list(df.min()) + list(df.mean()[::-1])
-    y_max = list(df.max()) + list(df.mean()[::-1])
-
-    t = go.Scatter(
-        x=x,
-        y=y_min,
-        fill='toself',
-        mode='none',
-        showlegend=False,
-        hoverinfo='none'
-    )
-
-    fig.add_trace(
-        go.Scatter(
-            x=x,
-            y=y_min,
-            fill='toself',
-            mode='none',
-            marker={'color': 'blue'},
-            showlegend=False,
-            hoverinfo='none'
-        )
-    )
-
-    fig.add_trace(
-        go.Scatter(
-            x=x,
-            y=y_max,
-            fill='toself',
-            mode='none',
-            marker={'color': 'red'},
-            showlegend=False,
-            hoverinfo='none'
-        )
-    )
+    fig = pt_trace.braz_cities_temp_shapes(fig, df)
 
 # Plot data from selected year with hovertext.
 fig.add_trace(pt_trace.braz_cities_temp_v2(

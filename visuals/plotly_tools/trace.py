@@ -53,10 +53,35 @@ def braz_cities_temp_v2(
 
 def braz_cities_temp_shapes(
     fig: go.Figure,
-    df: pd.DataFrame,
-    year: int
+    df: pd.DataFrame
 ):
 
-    x = list(df.index) + list(df.index[::-1])
+    x = list(df.columns) + list(df.columns[::-1])
+    y_min = list(df.min()) + list(df.mean()[::-1])
+    y_max = list(df.max()) + list(df.mean()[::-1])
 
-    return x
+    fig.add_trace(
+        go.Scatter(
+            x=x,
+            y=y_min,
+            fill='toself',
+            mode='none',
+            marker={'color': get_color('temperature', 'min')},
+            showlegend=False,
+            hoverinfo='none'
+        )
+    )
+
+    fig.add_trace(
+        go.Scatter(
+            x=x,
+            y=y_max,
+            fill='toself',
+            mode='none',
+            marker={'color': get_color('temperature', 'max')},
+            showlegend=False,
+            hoverinfo='none'
+        )
+    )
+
+    return fig
