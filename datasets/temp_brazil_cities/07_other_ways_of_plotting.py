@@ -3,9 +3,11 @@ import os
 import pandas as pd
 from plotly.figure_factory import create_scatterplotmatrix
 import plotly.graph_objects as go
+import pydeck as pdk
 import streamlit as st
 
 from vc.data_io import files
+from vc.ref_data.braz_cities_locations import loc
 import vc.visuals.streamlit_tools as stt
 import vc.visuals.plotly_tools.hovertext as pt_hover
 import vc.visuals.plotly_tools.layout as pt_layout
@@ -18,35 +20,43 @@ folder_path = r"C:/Data/temperature_time-series_for_brazilian_cities/"
 
 df = files.braz_cities_temp_all(folder_path)
 
-city = st.sidebar.selectbox(
-    'Choose city',
-    options=df.columns
-)
-
-date_start = st.sidebar.select_slider(
-    'Start date',
-    options=list(df.index)
-)
-
-date_end = st.sidebar.select_slider(
-    'End date',
-    options=list(df.index),
-    value=df.index[-1]
-)
-
-if date_start >= date_end:
-    st.error('Date start is greater than date end!')
-    st.stop()
-
 plot_mode = st.sidebar.selectbox(
     'Choose display mode',
     options=['Line plot', 'Scatter matrix', 'Map plot']
 )
 
-range_df = df.loc[date_start:date_end]
+if plot_mode in ['Line plot', 'Scatter matrix']:
+    city = st.sidebar.selectbox(
+        'Choose city',
+        options=df.columns
+    )
 
-city_series = range_df[city]
+    date_start = st.sidebar.select_slider(
+        'Start date',
+        options=list(df.index)
+    )
 
+    date_end = st.sidebar.select_slider(
+        'End date',
+        options=list(df.index),
+        value=df.index[-1]
+    )
+
+    if date_start >= date_end:
+        st.error('Date start is greater than date end!')
+        st.stop()
+
+
+
+    range_df = df.loc[date_start:date_end]
+
+    city_series = range_df[city]
+
+elif plot_mode == 'Map plot':
+    date_show = st.sidebar.select_slider(
+        'Show date',
+        options=list(df.index)
+    )
 
 
 if plot_mode == 'Line plot':
@@ -67,6 +77,7 @@ if plot_mode == 'Line plot':
         )
     )
     fig = pt_layout.braz_cities_temp_all(fig, city_series)
+    st.plotly_chart(fig)
 
 elif plot_mode == 'Scatter matrix':
     fig = create_scatterplotmatrix(
@@ -76,5 +87,46 @@ elif plot_mode == 'Scatter matrix':
     )
     fig.update_xaxes(matches='x')
     fig.update_yaxes(matches='y')
+    st.plotly_chart(fig)
 
-st.plotly_chart(fig)
+elif plot_mode == 'Map plot':
+    temp_series = df.loc[date_show]
+    temp_series.fillna(0, inplace=True)
+
+    plot_df = pd.DataFrame(
+        {
+            'city': temp_series.index,
+            'temperature': temp_series
+        }
+    )
+
+    plot_df['lat'] = 0
+    plot_df['lon'] = 0
+
+    for city in loc:
+        plot_df.loc[city, 'lat'] = loc[city]['lat']
+        plot_df.loc[city, 'lon'] = loc[city]['lon']
+
+    st.dataframe(plot_df)
+
+    st.pydeck_chart(
+        pdk.Deck(
+             map_style='mapbox://styles/mapbox/light-v9',
+             initial_view_state=pdk.ViewState(
+                 latitude=45,
+                 longitude=0,
+                 zoom=11,
+                 pitch=50
+             ),
+            layers = [
+                pdk.Layer(
+                    "ScatterplotLayer",
+                    plot_df,
+                    get_position=['lon', 'lat'],
+                    get_fill_color=[255, 140, 0],
+                    get_line_color=[0, 0, 0],
+                    get_radius=1000,
+                )
+            ]
+        )
+    )
