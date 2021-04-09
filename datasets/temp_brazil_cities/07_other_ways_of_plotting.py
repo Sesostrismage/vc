@@ -28,7 +28,8 @@ date_start = st.sidebar.select_slider(
 
 date_end = st.sidebar.select_slider(
     'End date',
-    options=list(df.index)
+    options=list(df.index),
+    value=df.index[-1]
 )
 
 if date_start >= date_end:
@@ -41,11 +42,17 @@ city_series = range_df[city]
 
 fig = go.Figure()
 
-# Plot data from selected year with hovertext.
+# Plot data from selected date range with hovertext.
 fig.add_trace(
     go.Scattergl(
         x=city_series.index,
-        y=city_series
+        y=city_series,
+        line={'color': 'black'},
+        showlegend=False
     )
 )
+fig = pt_trace.minmax_shapes(fig, range_df, axis=1)
+fig = pt_layout.braz_cities_temp_all(fig, city_series)
 st.plotly_chart(fig)
+
+st.write(fig['data'])

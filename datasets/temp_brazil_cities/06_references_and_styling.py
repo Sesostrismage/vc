@@ -46,7 +46,7 @@ year = st.sidebar.selectbox(
 fig = go.Figure()
 
 if ref_option == 'Min-mean-max shapes':
-    fig = pt_trace.braz_cities_temp_shapes(fig, df)
+    fig = pt_trace.minmax_shapes(fig, df)
 
 # Plot data from selected year with hovertext.
 fig.add_trace(pt_trace.braz_cities_temp_v2(

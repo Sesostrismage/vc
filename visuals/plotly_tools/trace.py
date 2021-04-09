@@ -58,14 +58,19 @@ def braz_cities_temp_v2(
     return trace
 
 
-def braz_cities_temp_shapes(
+def minmax_shapes(
     fig: go.Figure,
-    df: pd.DataFrame
+    df: pd.DataFrame,
+    axis: int=0
 ):
 
-    x = list(df.columns) + list(df.columns[::-1])
-    y_min = list(df.min()) + list(df.mean()[::-1])
-    y_max = list(df.max()) + list(df.mean()[::-1])
+    if axis == 0:
+        x = list(df.columns) + list(df.columns[::-1])
+    else:
+        x = list(df.index) + list(df.index[::-1])
+
+    y_min = list(df.min(axis=axis)) + list(df.mean(axis=axis)[::-1])
+    y_max = list(df.max(axis=axis)) + list(df.mean(axis=axis)[::-1])
 
     fig.add_trace(
         go.Scatter(
