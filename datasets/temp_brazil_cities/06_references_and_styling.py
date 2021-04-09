@@ -54,7 +54,8 @@ fig.add_trace(pt_trace.braz_cities_temp_v2(
     city_name,
     year,
     'temperature',
-    'value'
+    'value',
+    ref_df=df
 ))
 
 if ref_option in ['Mean line', 'Min-mean-max lines']:

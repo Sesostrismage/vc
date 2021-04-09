@@ -25,9 +25,16 @@ def braz_cities_temp_v2(
     trace_name: str,
     cat1: str,
     cat2: str,
-    background: bool=False
+    background: bool=False,
+    ref_df: pd.DataFrame=None
 ) -> go.Scatter:
-    text_list = pt_hover.braz_cities_temp(series, city_name, trace_name)
+    text_list = pt_hover.braz_cities_temp(
+        series,
+        city_name,
+        trace_name,
+        ref_df=ref_df
+    )
+
 
     color = get_color(cat1, cat2)
 
