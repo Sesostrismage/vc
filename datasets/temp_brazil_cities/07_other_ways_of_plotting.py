@@ -1,4 +1,8 @@
 import datetime
+import matplotlib
+from matplotlib import cm
+import matplotlib.pyplot as plt
+import numpy as np
 import os
 import pandas as pd
 from plotly.figure_factory import create_scatterplotmatrix
@@ -7,6 +11,7 @@ import pydeck as pdk
 import streamlit as st
 
 from vc.data_io import files
+from vc.data_treat.maps import map_range
 from vc.ref_data.braz_cities_locations import loc
 import vc.visuals.streamlit_tools as stt
 import vc.visuals.plotly_tools.hovertext as pt_hover
@@ -53,9 +58,28 @@ if plot_mode in ['Line plot', 'Scatter matrix']:
     city_series = range_df[city]
 
 elif plot_mode == 'Map plot':
+    month_bool = st.sidebar.checkbox(
+        'Choose specific month?',
+        value=False
+    )
+    st.write(type(df.index[0]))
+
+    if month_bool:
+        month = st.sidebar.slider(
+            'Choose month',
+            min_value=1,
+            max_value=12,
+            step=1
+        )
+        options = [dt for dt in df.index if dt.month == month]
+
+    else:
+        options = list(df.index)
+
     date_show = st.sidebar.select_slider(
         'Show date',
-        options=list(df.index)
+        options=options,
+        value=options[-1]
     )
 
 
@@ -91,7 +115,7 @@ elif plot_mode == 'Scatter matrix':
 
 elif plot_mode == 'Map plot':
     temp_series = df.loc[date_show]
-    temp_series.fillna(0, inplace=True)
+    temp_series.dropna(how='any', inplace=True)
 
     plot_df = pd.DataFrame(
         {
@@ -99,23 +123,38 @@ elif plot_mode == 'Map plot':
             'temperature': temp_series
         }
     )
+    temp_min = df.min().min()
+    temp_max = df.max().max()
+    temp_series_norm = (temp_series - temp_min)/(temp_max - temp_min)
+
+    cmap_name = st.sidebar.selectbox(
+        'Choose colormap',
+        options=plt.colormaps(),
+        index=plt.colormaps().index('jet')
+    )
+    cmap = cm.get_cmap(cmap_name)
+
+    for city, temp in temp_series_norm.iteritems():
+        k = matplotlib.colors.colorConverter.to_rgb(cmap(temp))
+        plot_df.loc[city, 'r'] = k[0] * 255
+        plot_df.loc[city, 'g'] = k[1] * 255
+        plot_df.loc[city, 'b'] = k[2] * 255
 
     plot_df['lat'] = 0
     plot_df['lon'] = 0
 
     for city in loc:
-        plot_df.loc[city, 'lat'] = loc[city]['lat']
-        plot_df.loc[city, 'lon'] = loc[city]['lon']
-
-    st.dataframe(plot_df)
+        if city in plot_df.index:
+            plot_df.loc[city, 'lat'] = loc[city]['lat']
+            plot_df.loc[city, 'lon'] = loc[city]['lon']
 
     st.pydeck_chart(
         pdk.Deck(
              map_style='mapbox://styles/mapbox/light-v9',
              initial_view_state=pdk.ViewState(
-                 latitude=45,
-                 longitude=0,
-                 zoom=11,
+                 latitude=-17,
+                 longitude=-65,
+                 zoom=4,
                  pitch=50
              ),
             layers = [
@@ -123,9 +162,9 @@ elif plot_mode == 'Map plot':
                     "ScatterplotLayer",
                     plot_df,
                     get_position=['lon', 'lat'],
-                    get_fill_color=[255, 140, 0],
+                    get_fill_color=['r', 'g', 'b'],
                     get_line_color=[0, 0, 0],
-                    get_radius=1000,
+                    get_radius=100000
                 )
             ]
         )

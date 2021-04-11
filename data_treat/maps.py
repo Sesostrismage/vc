@@ -1,3 +1,4 @@
+import numpy as np
 import pandas as pd
 
 def map_range(
@@ -42,9 +43,13 @@ def map_range(
     if in_max is None:
         in_max = in_series.max()
 
-    # Map series to new range.
-    amplitude = in_max - in_min
-    out_series = (in_series - in_min)/amplitude
+    # Calculate amplitudes.
+    amplitude_in = in_max - in_min
+    amplitude_out = out_max - out_min
+    # Create a temporary normed series to apply the new scaling.
+    norm_series = (in_series - in_min)/amplitude_in
+    # Apply scaling.
+    out_series = (norm_series + out_min) * amplitude_out
     # Apply clipping to prevent out-of-range values.
     out_series.clip(lower=out_min, upper=out_max, inplace=True)
 
