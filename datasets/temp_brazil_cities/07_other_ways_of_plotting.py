@@ -28,10 +28,26 @@ df = files.braz_cities_temp_all(folder_path)
 
 plot_mode = st.sidebar.selectbox(
     'Choose display mode',
-    options=['Line plot', 'Scatter matrix', 'Map plot']
+    options=['Line plot', 'Map plot']
 )
 
-if plot_mode in ['Line plot', 'Scatter matrix']:
+month_bool = st.sidebar.checkbox(
+    'Filter by month?',
+    value=False
+)
+if month_bool:
+    month = st.sidebar.slider(
+        'Choose month',
+        min_value=1,
+        max_value=12,
+        step=1
+    )
+    options = [dt for dt in df.index if dt.month == month]
+
+else:
+    options = list(df.index)
+
+if plot_mode in ['Line plot']:
     city = st.sidebar.selectbox(
         'Choose city',
         options=df.columns
@@ -39,13 +55,13 @@ if plot_mode in ['Line plot', 'Scatter matrix']:
 
     date_start = st.sidebar.select_slider(
         'Start date',
-        options=list(df.index)
+        options=options
     )
 
     date_end = st.sidebar.select_slider(
         'End date',
-        options=list(df.index),
-        value=df.index[-1]
+        options=options,
+        value=options[-1]
     )
 
     if date_start >= date_end:
@@ -55,15 +71,11 @@ if plot_mode in ['Line plot', 'Scatter matrix']:
 
 
     range_df = df.loc[date_start:date_end]
+    range_df = range_df[range_df.index.isin(options)]
 
     city_series = range_df[city]
 
 elif plot_mode == 'Map plot':
-    month_bool = st.sidebar.checkbox(
-        'Choose specific month?',
-        value=False
-    )
-
     if month_bool:
         month = st.sidebar.slider(
             'Choose month',
@@ -101,16 +113,6 @@ if plot_mode == 'Line plot':
         )
     )
     fig = pt_layout.braz_cities_temp_all(fig, city_series)
-    st.plotly_chart(fig)
-
-elif plot_mode == 'Scatter matrix':
-    fig = create_scatterplotmatrix(
-        range_df[range_df.columns[:4]],
-        height=pt_layout.height_standard,
-        width=pt_layout.width_standard
-    )
-    fig.update_xaxes(matches='x')
-    fig.update_yaxes(matches='y')
     st.plotly_chart(fig)
 
 elif plot_mode == 'Map plot':
