@@ -20,6 +20,7 @@ import vc.visuals.plotly_tools.trace as pt_trace
 
 stt.settings()
 
+# IMPROVE Add title.
 # Folder path to data files.
 folder_path = r"C:/Data/temperature_time-series_for_brazilian_cities/"
 
@@ -62,7 +63,6 @@ elif plot_mode == 'Map plot':
         'Choose specific month?',
         value=False
     )
-    st.write(type(df.index[0]))
 
     if month_bool:
         month = st.sidebar.slider(
@@ -123,6 +123,11 @@ elif plot_mode == 'Map plot':
             'temperature': temp_series
         }
     )
+
+    for city in plot_df.index:
+        plot_df.loc[city, 'all_time_low'] = df[city].min()
+        plot_df.loc[city, 'all_time_high'] = df[city].max()
+
     temp_min = df.min().min()
     temp_max = df.max().max()
     temp_series_norm = (temp_series - temp_min)/(temp_max - temp_min)
@@ -150,17 +155,19 @@ elif plot_mode == 'Map plot':
 
     st.pydeck_chart(
         pdk.Deck(
-             map_style='mapbox://styles/mapbox/light-v9',
-             initial_view_state=pdk.ViewState(
-                 latitude=-17,
-                 longitude=-65,
-                 zoom=4,
-                 pitch=50
-             ),
+            map_style='mapbox://styles/mapbox/light-v9',
+            initial_view_state=pdk.ViewState(
+                latitude=-17,
+                longitude=-65,
+                zoom=4,
+                pitch=50
+            ),
+            tooltip={'text': '{city}: {temperature}\n{city} All-time low: {all_time_low}\n{city} All-time high: {all_time_high}'},
             layers = [
                 pdk.Layer(
                     "ScatterplotLayer",
                     plot_df,
+                    pickable=True,
                     get_position=['lon', 'lat'],
                     get_fill_color=['r', 'g', 'b'],
                     get_line_color=[0, 0, 0],
