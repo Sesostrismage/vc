@@ -16,6 +16,7 @@ import vc.visuals.plotly_tools.trace as pt_trace
 stt.settings()
 
 # IMPROVE Add title.
+# TODO Dostrings.
 # Folder path to data files.
 folder_path = r"C:/Data/temperature_time-series_for_brazilian_cities/"
 
@@ -123,9 +124,9 @@ elif plot_mode == 'Map plot':
 
     for city, temp in temp_series_norm.iteritems():
         k = matplotlib.colors.colorConverter.to_rgb(cmap(temp))
-        plot_df.loc[city, 'r'] = k[0] * 255
-        plot_df.loc[city, 'g'] = k[1] * 255
-        plot_df.loc[city, 'b'] = k[2] * 255
+        plot_df.loc[city, 'r'] = int(k[0] * 255)
+        plot_df.loc[city, 'g'] = int(k[1] * 255)
+        plot_df.loc[city, 'b'] = int(k[2] * 255)
 
     plot_df['lat'] = 0
     plot_df['lon'] = 0
