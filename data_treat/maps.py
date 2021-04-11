@@ -48,8 +48,12 @@ def map_range(
     # Apply clipping to prevent out-of-range values.
     out_series.clip(lower=out_min, upper=out_max, inplace=True)
 
-    # If inversion if requested, do that.
+    # If inversion is requested, do that.
     if invert:
-        out_series = 1 - out_series
+        out_series = out_max - (out_series - out_min)
+
+    # If casting to int is requested, do that.
+    if to_int:
+        out_series = out_series.astype(int)
 
     return out_series
