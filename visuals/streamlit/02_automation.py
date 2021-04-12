@@ -9,7 +9,7 @@ import vc.visuals.streamlit_tools as stt
 stt.settings()
 
 # Load all data files into a dict with city names as keys.
-data_dict = files.braz_cities_temp(folder_path)
+data_dict = files.braz_cities_temp()
 # Multi-select cities.
 selected_cities_list = stt.multiselect_cities(data_dict)
 # Whether or not to show the mean graph.
