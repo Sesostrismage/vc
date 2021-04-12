@@ -8,8 +8,6 @@ import vc.visuals.streamlit_tools as stt
 
 stt.settings()
 
-# Folder path to data files.
-folder_path = r"C:/Data/temperature_time-series_for_brazilian_cities/"
 # Load all data files into a dict with city names as keys.
 data_dict = files.braz_cities_temp(folder_path)
 # Multi-select cities.
@@ -32,7 +30,7 @@ fig = go.Figure()
 # Create DataFrame to receive data for mean graph.
 mean_df = pd.DataFrame()
 
-for city in data_dict:
+for city in selected_cities_list:
     if year in data_dict[city].index:
         # Plot data from selected year if present.
         fig.add_trace(go.Scattergl(
