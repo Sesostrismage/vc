@@ -1,4 +1,4 @@
-import matplotlib.pyplot as plt
+import plotly.graph_objects as go
 import numpy as np
 import os
 import pandas as pd
@@ -7,6 +7,7 @@ import streamlit as st
 from vc.definitions import ROOT_DIR
 import vc.visuals.streamlit_tools as stt
 
+stt.settings()
 # Folder path with root of vc dirextory automatically detected.
 folder_path = os.path.join(ROOT_DIR, 'datasets', 'temp_brazil_cities')
 
@@ -72,25 +73,33 @@ year = st.sidebar.selectbox(
 )
 
 #TODO Set fig size to match HD screen size.
-fig = plt.figure()
+fig = go.Figure()
 
 mean_df = pd.DataFrame()
 
 for file_name in file_dict:
     if year in file_dict[file_name].index:
         # Plot data from selected year if present.
-        plt.plot(file_dict[file_name].columns, file_dict[file_name].loc[year], label=file_name)
+        fig.add_trace(go.Scattergl(
+            x=file_dict[file_name].columns, y=file_dict[file_name].loc[year], name=file_name
+        ))
 
         #Build mean df.
         mean_df = pd.concat([mean_df, pd.DataFrame({file_name: file_dict[file_name].loc[year]})], axis=1)
 
 if show_mean_bool:
     mean_series = mean_df.mean(axis=1)
-    plt.plot(mean_series.index, mean_series, label='All-city mean')
+    fig.add_trace(go.Scattergl(
+        x=mean_series.index, y=mean_series, name='All-city mean'
+    ))
 
-plt.xlabel('Months')
-plt.ylabel('Temperature [deg C]')
-plt.title('Temperature for ' + file_name + ' in ' + str(year))
-plt.legend()
+fig.update_xaxes(title='Datetime')
+fig.update_yaxes(title='Temperature [deg C]')
+fig.update_layout(
+    title='Temperature for brazilian cities in ' + str(year),
+    hovermode='x',
+    height=600,
+    width=1100
+)
 # Show the figure in the Streamlit app.
-st.pyplot(fig)
+st.plotly_chart(fig)
