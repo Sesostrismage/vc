@@ -1,3 +1,4 @@
+#TODO MOve to dataset folder.
 loc = {
     'Belem': {'lat': -1.4, 'lon': -48.49},
     'Curitiba': {'lat': -25.42, 'lon': -49.26},
