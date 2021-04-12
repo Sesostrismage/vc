@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 
 # Folder path to data files.
-folder_path = r"C:/Data/temperature_time-series_for_brazilian_cities/"
+folder_path = r"D:/Kode/vc/datasets/temp_brazil_cities/"
 
 # Load data into Pandas DataFrame with first row as column names and first column as index names.
 belem_df = pd.read_csv(folder_path + 'station_belem.csv', header=0, index_col=0)
