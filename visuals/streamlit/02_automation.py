@@ -44,7 +44,7 @@ fig = go.Figure()
 
 mean_df = pd.DataFrame()
 
-for city in data_dict:
+for city in selected_cities_list:
     if year in data_dict[city].index:
         # Plot data from selected year if present.
         fig.add_trace(go.Scattergl(
