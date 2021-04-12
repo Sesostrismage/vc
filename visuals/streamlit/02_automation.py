@@ -12,32 +12,24 @@ stt.settings()
 folder_path = r"C:/Data/temperature_time-series_for_brazilian_cities/"
 # Load all data files into a dict with city names as keys.
 data_dict = files.braz_cities_temp(folder_path)
-
-selected_cities_list = st.sidebar.multiselect(
-    'Select cities to view',
-    options=list(data_dict.keys()),
-    default=list(data_dict.keys())
-)
-
-if len(selected_cities_list) == 0:
-    st.error('No cities are selected.')
-    st.stop()
-
-show_mean_bool = st.sidebar.checkbox(
-    'Show mean value?'
-)
-
+# Multi-select cities.
+selected_cities_list = stt.multiselect_cities(data_dict)
+# Whether or not to show the mean graph.
+show_mean_bool = st.sidebar.checkbox('Show mean value?')
+# Get the span of years in the selected data.
 min_year, max_year = year_span(data_dict, selected_cities_list)
 
 # Selectbox to choose the year.
 year = st.sidebar.selectbox(
     'Choose year to view',
     options=range(min_year, max_year+1),
-    index=len(range(min_year, max_year+1))-1
+    index=len(range(min_year, max_year+1))-2
 )
 
+# Create figure.
 fig = go.Figure()
 
+# Create DataFrame to receive data for mean graph.
 mean_df = pd.DataFrame()
 
 for city in data_dict:
