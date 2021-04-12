@@ -9,7 +9,7 @@ import vc.visuals.streamlit_tools as stt
 
 stt.settings()
 # Folder path with root of vc dirextory automatically detected.
-folder_path = os.path.join(ROOT_DIR, 'datasets', 'temp_brazil_cities')
+folder_path = os.path.join(ROOT_DIR, 'datasets', 'temp_brazil_cities', 'raw_data')
 
 # File names of each data file as a list.
 file_name_list = [
