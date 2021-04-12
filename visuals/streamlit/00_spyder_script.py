@@ -58,11 +58,37 @@ vitoria_df[vitoria_df > 100] = np.nan
 
 # Set the year you want to look at.
 year = 1977
-# Calculate the mean per month across all years for comparison.
-mean = belem_df.mean()
+
+mean_df = pd.DataFrame()
+# Plot cities data from selected year.
+if year in belem_df.index:
+    mean_df = pd.concat([mean_df, pd.DataFrame({'Belem': belem_df.loc[year]})], axis=1)
+if year in curitiba_df.index:
+    mean_df = pd.concat([mean_df, pd.DataFrame({'Curitiba': curitiba_df.loc[year]})], axis=1)
+if year in fortaleza_df.index:
+    mean_df = pd.concat([mean_df, pd.DataFrame({'Fortaleza': fortaleza_df.loc[year]})], axis=1)
+if year in goiania_df.index:
+    mean_df = pd.concat([mean_df, pd.DataFrame({'Goiania': goiania_df.loc[year]})], axis=1)
+if year in macapa_df.index:
+    mean_df = pd.concat([mean_df, pd.DataFrame({'Macapa': macapa_df.loc[year]})], axis=1)
+if year in manaus_df.index:
+    mean_df = pd.concat([mean_df, pd.DataFrame({'Manaus': manaus_df.loc[year]})], axis=1)
+if year in recife_df.index:
+    mean_df = pd.concat([mean_df, pd.DataFrame({'Recife': recife_df.loc[year]})], axis=1)
+if year in rio_df.index:
+    mean_df = pd.concat([mean_df, pd.DataFrame({'Rio': rio_df.loc[year]})], axis=1)
+if year in salvador_df.index:
+    mean_df = pd.concat([mean_df, pd.DataFrame({'Salvador': salvador_df.loc[year]})], axis=1)
+if year in sao_luiz_df.index:
+    mean_df = pd.concat([mean_df, pd.DataFrame({'Sao Luiz': sao_luiz_df.loc[year]})], axis=1)
+if year in sao_paulo_df.index:
+    mean_df = pd.concat([mean_df, pd.DataFrame({'Sao Paulo': sao_paulo_df.loc[year]})], axis=1)
+if year in vitoria_df.index:
+    mean_df = pd.concat([mean_df, pd.DataFrame({'Vitoria': vitoria_df.loc[year]})], axis=1)
 
 # Create figure.
 plt.figure()
+
 # Plot cities data from selected year.
 if year in belem_df.index:
     plt.plot(belem_df.columns, belem_df.loc[year], label='Belem')
@@ -88,8 +114,11 @@ if year in sao_paulo_df.index:
     plt.plot(sao_paulo_df.columns, sao_paulo_df.loc[year], label='Sao Paulo')
 if year in vitoria_df.index:
     plt.plot(vitoria_df.columns, vitoria_df.loc[year], label='Vitoria')
+
+plt.plot(mean_df.index, mean_df.mean(axis=1), label='Mean')
+
 plt.xlabel('Months')
 plt.ylabel('Temperature [deg C]')
-plt.title('Temperature for brazilian cities in ' + str(year))
+plt.title('Temperature for 8 brazilian cities in ' + str(year))
 plt.legend()
 plt.show()
