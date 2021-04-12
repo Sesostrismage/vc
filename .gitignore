@@ -130,4 +130,4 @@ dmypy.json
 
 # Project-specific.
 temp.py
-.vscode/settings.json
+.vscode/
