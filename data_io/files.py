@@ -3,7 +3,10 @@ import numpy as np
 import os
 import pandas as pd
 
-def braz_cities_temp(folder_path: str, mode: str='dict'):
+from vc.definitions import ROOT_DIR
+
+def braz_cities_temp(mode: str='dict'):
+    folder_path = os.path.join(ROOT_DIR, 'datasets', 'temp_brazil_cities', 'raw_data')
 
     def load_file(file_path: str) -> pd.DataFrame:
         # Load data into Pandas DataFrame with first row as column names and first column as index names.

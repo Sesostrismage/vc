@@ -1,21 +1,15 @@
-import os
 import plotly.graph_objects as go
 import pandas as pd
 import streamlit as st
 
 from vc.analytics.braz_cities_temp import year_span
 from vc.data_io import files
-from vc.definitions import ROOT_DIR
 import vc.visuals.streamlit_tools as stt
 
 stt.settings()
 
-# Folder path to data files.
-folder_path = os.path.join(ROOT_DIR, 'datasets', 'temp_brazil_cities', 'raw_data')
 # Load all data files into a dict with city names as keys.
-data_dict = files.braz_cities_temp(folder_path)
-df = files.braz_cities_temp(folder_path, mode='agg')
-st.dataframe(df)
+data_dict = files.braz_cities_temp()
 
 selected_cities_list = st.sidebar.multiselect(
     'Select cities to view',
