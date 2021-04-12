@@ -5,6 +5,7 @@ import pandas as pd
 
 from vc.data_io import files
 
+# TODO Change to return all cities in a dict.
 def braz_cities_temp(file_path: str) -> pd.DataFrame:
     # Load data into Pandas DataFrame with first row as column names and first column as index names.
     df = pd.read_csv(
