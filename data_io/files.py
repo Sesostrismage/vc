@@ -3,7 +3,6 @@ import numpy as np
 import os
 import pandas as pd
 
-# TODO Change to include the aggregated data as another mode.
 def braz_cities_temp(folder_path: str, mode: str='dict'):
 
     def load_file(file_path: str) -> pd.DataFrame:
