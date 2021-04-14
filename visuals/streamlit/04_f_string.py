@@ -2,7 +2,7 @@ w_bird = 5
 w_fruit = 1
 type_fruit = 'coconut'
 
-# String addition, clunky:
+# String addition, clunky, manual declaration of variables to strings:
 str_add = "A " + str(w_bird) + " ounce bird could not carry a " + str(w_fruit) + " pound " + type_fruit + "."
 print(str_add)
 
