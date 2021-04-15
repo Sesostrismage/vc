@@ -4,6 +4,7 @@ import streamlit as st
 
 from vc.analytics.braz_cities_temp import year_span
 from vc.data_io import files
+import vc.visuals.plotly_tools.figure as pt_figure
 import vc.visuals.streamlit_tools as stt
 
 stt.settings()
@@ -24,8 +25,8 @@ year = st.sidebar.selectbox(
     index=len(range(min_year, max_year+1))-2
 )
 
-# Create figure.
-fig = go.Figure()
+# Create figure with standard layout.
+fig = pt_figure.braz_cities_temp_per_year(year)
 
 # Create DataFrame to receive data for mean graph.
 mean_df = pd.DataFrame()
@@ -46,13 +47,6 @@ if show_mean_bool:
         x=mean_series.index, y=mean_series, name='All-city mean'
     ))
 
-fig.update_xaxes(title='Datetime')
-fig.update_yaxes(title='Temperature [deg C]')
-fig.update_layout(
-    title='Temperature for brazilian cities in ' + str(year),
-    hovermode='x',
-    height=600,
-    width=1100
-)
+
 # Show the figure in the Streamlit app.
 st.plotly_chart(fig)
