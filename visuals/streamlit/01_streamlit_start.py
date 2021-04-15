@@ -7,7 +7,12 @@ import streamlit as st
 from vc.definitions import ROOT_DIR
 import vc.visuals.streamlit_tools as stt
 
-stt.settings()
+####################################################################
+# Setup and data loading.
+####################################################################
+
+# Standard Streamlit settings.
+st.set_page_config(layout='wide')
 # Folder path with root of vc dirextory automatically detected.
 folder_path = os.path.join(ROOT_DIR, 'datasets', 'temp_brazil_cities', 'raw_data')
 
@@ -31,17 +36,17 @@ file_dict = {}
 min_year = 2010
 max_year = 2010
 
-selected_cities_list = st.sidebar.multiselect(
+selected_files_list = st.sidebar.multiselect(
     'Select file names to view',
     options=file_name_list,
     default=file_name_list
 )
 
-if len(selected_cities_list) == 0:
+if len(selected_files_list) == 0:
     st.error('No cities are selected.')
     st.stop()
 
-for file_name in selected_cities_list:
+for file_name in selected_files_list:
     # Load data into Pandas DataFrame with first row as column names and first column as index names.
     df = pd.read_csv(
         os.path.join(folder_path, file_name),
