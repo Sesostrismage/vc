@@ -62,7 +62,7 @@ selected_files_list = st.sidebar.multiselect(
 )
 
 if len(selected_files_list) == 0:
-    st.error('No cities are selected.')
+    st.error('No files are selected.')
     st.stop()
 
 # Find earliest and latest years that have data.
