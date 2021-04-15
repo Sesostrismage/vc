@@ -41,10 +41,6 @@ if len(selected_cities_list) == 0:
     st.error('No cities are selected.')
     st.stop()
 
-show_mean_bool = st.sidebar.checkbox(
-    'Show mean value?'
-)
-
 for file_name in selected_cities_list:
     # Load data into Pandas DataFrame with first row as column names and first column as index names.
     df = pd.read_csv(
@@ -70,6 +66,10 @@ year = st.sidebar.selectbox(
     'Choose year to view',
     options=year_list,
     index=len(year_list)-1
+)
+
+show_mean_bool = st.sidebar.checkbox(
+    'Show mean value?'
 )
 
 fig = go.Figure()
