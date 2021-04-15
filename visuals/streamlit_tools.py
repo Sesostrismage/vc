@@ -31,3 +31,12 @@ def multiselect_cities(data_dict: dict) -> list:
         st.stop()
 
     return selected_cities_list
+
+def select_year(min_year: int, max_year: int) -> st.sidebar.selectbox:
+    year = st.sidebar.selectbox(
+        'Choose year to view',
+        options=range(min_year, max_year+1),
+        index=len(range(min_year, max_year+1))-2
+    )
+
+    return year

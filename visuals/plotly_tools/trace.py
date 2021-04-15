@@ -4,6 +4,13 @@ import plotly.graph_objects as go
 from vc.visuals.colors import get_color
 import vc.visuals.plotly_tools.hovertext as pt_hover
 
+def braz_cities_mean(mean_series: pd.Series) -> go.Trace:
+    #TODO Hovertext for mean series.
+    trace = go.Scattergl(x=mean_series.index, y=mean_series, name='All-city mean')
+
+    return trace
+
+
 def braz_cities_temp_v1(series: pd.Series, city_name: list, trace_name: str) -> go.Scatter:
     text_list = pt_hover.braz_cities_temp(series, city_name, trace_name)
 

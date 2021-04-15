@@ -72,7 +72,6 @@ year = st.sidebar.selectbox(
     index=len(year_list)-1
 )
 
-#TODO Set fig size to match HD screen size.
 fig = go.Figure()
 
 mean_df = pd.DataFrame()
