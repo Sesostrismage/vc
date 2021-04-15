@@ -17,7 +17,7 @@ st.set_page_config(layout='wide')
 folder_path = os.path.join(ROOT_DIR, 'datasets', 'temp_brazil_cities', 'raw_data')
 # File name list from reading the folder contents.
 file_name_list = os.listdir(folder_path)
-
+# Empty dict to receive data.
 city_dict = {}
 
 # Loop through all file names and load the data.
@@ -62,10 +62,6 @@ for city in selected_cities_list:
         min_year = min(min_year, city_dict[city].index[0])
         max_year = max(max_year, city_dict[city].index[-1])
 
-show_mean_bool = st.sidebar.checkbox(
-    'Show mean value?'
-)
-
 # Get all available years from the file and make it into a list.
 year_list = range(min_year, max_year+1)
 # Selectbox to choose the year.
@@ -73,6 +69,10 @@ year = st.sidebar.selectbox(
     'Choose year to view',
     options=year_list,
     index=len(year_list)-1
+)
+
+show_mean_bool = st.sidebar.checkbox(
+    'Show mean value?'
 )
 
 if show_mean_bool:
