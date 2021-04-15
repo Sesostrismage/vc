@@ -107,7 +107,7 @@ if show_mean_bool:
 fig.update_xaxes(title='Datetime')
 fig.update_yaxes(title='Temperature [deg C]')
 fig.update_layout(
-    title='Temperature for brazilian cities in ' + str(year),
+    title=f"Temperature for brazilian cities in {year}",
     hovermode='x',
     height=600,
     width=1100

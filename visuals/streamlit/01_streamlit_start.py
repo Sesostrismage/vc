@@ -16,7 +16,7 @@ st.set_page_config(layout='wide')
 # Folder path with root of vc dirextory automatically detected.
 folder_path = os.path.join(ROOT_DIR, 'datasets', 'temp_brazil_cities', 'raw_data')
 
-# File names of each data file as a list.
+# List of file names with data.
 file_name_list = [
     'station_belem.csv',
     'station_curitiba.csv',
@@ -83,20 +83,6 @@ year = st.sidebar.selectbox(
     index=len(year_list)-1
 )
 
-show_mean_bool = st.sidebar.checkbox(
-    'Show mean value?'
-)
-
-if show_mean_bool:
-    mean_df = pd.DataFrame()
-
-    for file_name in file_dict:
-        if year in file_dict[file_name].index:
-            #Build mean df.
-            mean_df = pd.concat([mean_df, pd.DataFrame({file_name: file_dict[file_name].loc[year]})], axis=1)
-
-    mean_series = mean_df.mean(axis=1)
-
 
 ####################################################################
 # PLotting.
@@ -110,11 +96,6 @@ for file_name in file_dict:
         fig.add_trace(go.Scattergl(
             x=file_dict[file_name].columns, y=file_dict[file_name].loc[year], name=file_name
         ))
-
-if show_mean_bool:
-    fig.add_trace(go.Scattergl(
-        x=mean_series.index, y=mean_series, name='All-city mean'
-    ))
 
 fig.update_xaxes(title='Datetime')
 fig.update_yaxes(title='Temperature [deg C]')
