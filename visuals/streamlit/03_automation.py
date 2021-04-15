@@ -18,12 +18,13 @@ selected_cities_list = stt.multiselect_cities(data_dict)
 show_mean_bool = st.sidebar.checkbox('Show mean value?')
 # Get the span of years in the selected data.
 min_year, max_year = year_span(data_dict, selected_cities_list)
-# Selectbox to choose the year.
+# Selectbox to choose the year to plot.
 year = stt.select_year(min_year, max_year)
 
 # Create figure with standard layout.
 fig = pt_figure.braz_cities_temp_per_year(year)
 
+# Plot individual cities.
 for city in selected_cities_list:
     if year in data_dict[city].index:
         # Plot data from selected year if present.
