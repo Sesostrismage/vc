@@ -1,88 +1,240 @@
+import plotly.graph_objects as go
 import numpy as np
 import os
 import pandas as pd
-import plotly.graph_objects as go
 import streamlit as st
 
-# Folder path to data files.
-folder_path = r"C:/Data/temperature_time-series_for_brazilian_cities/"
-# Get file names automatically from the folder.
+from vc.definitions import ROOT_DIR
+from vc.visuals.colors import get_color, map_color_sequence
+
+
+####################################################################
+# Setup and data loading.
+####################################################################
+
+# Standard Streamlit settings.
+st.set_page_config(layout='wide')
+# Folder path with root of vc dirextory automatically detected.
+folder_path = os.path.join(ROOT_DIR, 'datasets', 'temp_brazil_cities', 'raw_data')
+# File name list from reading the folder contents.
 file_name_list = os.listdir(folder_path)
+# Empty dict to receive data.
+city_dict = {}
 
-#Selectbox to choose the file.
-file_name = st.sidebar.selectbox(
-    'Choose file name',
-    options=file_name_list
+# Loop through all file names and load the data.
+for file_name in file_name_list:
+    # Generate city name from file name.
+    city_name = file_name[8:-4].replace('_', ' ').title()
+
+    # Load data into Pandas DataFrame with first row as column names and first column as index names.
+    df = pd.read_csv(
+        os.path.join(folder_path, file_name),
+        header=0,
+        index_col=0
+    )
+    # Remove pre-generated average columns.
+    df_crop = df.drop(['D-J-F', 'M-A-M', 'J-J-A', 'S-O-N', 'metANN'], axis=1)
+    # Set erroneous values to NaN so they don't disturb the results.
+    df_crop[df_crop > 100] = np.nan
+    # Insert dataframe into file dict.
+    city_dict[city_name] = df_crop
+
+# Get fixed colormap.
+cmap = map_color_sequence(city_dict.keys())
+
+
+####################################################################
+# User input and calculations.
+####################################################################
+
+# Multi-select which cities to plot.
+selected_cities_list = st.sidebar.multiselect(
+    'Select cities to view',
+    options=sorted(list(city_dict.keys())),
+    default=sorted(list(city_dict.keys()))
 )
-# Translate into city name.
-city_name = file_name[8:-4].replace('_', ' ').title()
+# Check if any cities have been selected and warn the user if not.
+if len(selected_cities_list) == 0:
+    st.error('No cities are selected.')
+    st.stop()
 
-# Load data into Pandas DataFrame with first row as column names and first column as index names.
-df = pd.read_csv(
-    folder_path + file_name,
-    header=0,
-    index_col=0
-)
+# Find earliest and latest years that have data.
+min_year = 2010
+max_year = 2010
 
-# Remove pre-generated average columns.
-df_crop = df.drop(['D-J-F', 'M-A-M', 'J-J-A', 'S-O-N', 'metANN'], axis=1)
-# Set erroneous values to NaN so they don't disturb the results.
-df_crop[df_crop > 100] = np.nan
+for city in selected_cities_list:
+    if city in city_dict:
+        min_year = min(min_year, city_dict[city].index[0])
+        max_year = max(max_year, city_dict[city].index[-1])
 
 # Get all available years from the file and make it into a list.
-year_list = list(df_crop.index)
+year_list = range(min_year, max_year+1)
 # Selectbox to choose the year.
 year = st.sidebar.selectbox(
     'Choose year to view',
-    options=year_list
+    options=year_list,
+    index=len(year_list)-1
 )
 
-# Calculate the mean per month across all years for comparison.
-mean = df_crop.mean()
+# Choose how to display reference data.
+ref_option = st.sidebar.selectbox(
+    'Choose reference display',
+    options=['None', 'Mean line', 'Min-mean-max lines', 'Min-mean-max shapes']
+)
 
-# Now you have to create a figure first.
+# If reference lines are shown, you can choose to have them less obtrusive.
+if ref_option in ['Mean line', 'Min-mean-max lines']:
+    background_bool = st.sidebar.checkbox(
+        'Background styling?',
+        value=False
+    )
+else:
+    background_bool = False
+
+# This sets the opacity of the reference lines.
+if background_bool:
+    opacity = 0.25
+else:
+    opacity = 1
+
+# Calculate statistical values.
+if ref_option in ['Mean line', 'Min-mean-max lines', 'Min-mean-max shapes']:
+    stat_df = pd.DataFrame()
+
+    for city_name in city_dict:
+        if year in city_dict[city_name].index:
+            #Build stat df.
+            stat_df = pd.concat([stat_df, pd.DataFrame({city_name: city_dict[city_name].loc[year]})], axis=1)
+
+    mean_series = stat_df.mean(axis=1)
+    min_series = stat_df.min(axis=1)
+    max_series = stat_df.max(axis=1)
+
+
+####################################################################
+# Plotting.
+####################################################################
+
+# Create figure.
 fig = go.Figure()
-# Create hovertext for selected year.
-text_list = [
-    city_name + ' ' + idx.title() + ' ' + str(year) + '<br>' +
-    str(item) + ' Deg C'
-    for idx, item in df_crop.loc[year].iteritems()
-]
-# Plot data from selected year with hovertext.
-fig.add_trace(
-    go.Scatter(
-        x=df_crop.columns,
-        y=df_crop.loc[year],
+
+# Case when reference lines are chosen.
+if ref_option in ['Mean line', 'Min-mean-max lines']:
+    # Create hovertext.
+    text_list = [
+            f"{idx.title()} {year}<br>" +
+            f"{round(item, 2)} deg C mean"
+            for idx, item in mean_series.iteritems()
+        ]
+
+    # Print reference lines first so they go behind.
+    fig.add_trace(go.Scattergl(
+        x=mean_series.index,
+        y=mean_series,
         hoverinfo='text',
         hovertext=text_list,
-        name=str(year),
-        mode='lines+markers'
-    )
-)
+        name='All-city mean',
+        line={'color': get_color('temperature', 'mean')},
+        opacity=opacity
+    ))
+    # If min and max lines are also chose, plot them.
+    if ref_option in ['Min-mean-max lines']:
+        # Create hovertext.
+        text_list = [
+            f"{idx.title()} {year}<br>" +
+            f"{item} deg C minimum in {stat_df.loc[idx].idxmin()}"
+            for idx, item in min_series.iteritems()
+        ]
 
-# Create hovertext for all-years mean.
-text_list = [
-    city_name + ' ' + idx.title() + ' all-years mean<br>' +
-    str(item) + ' Deg C'
-    for idx, item in df_crop.loc[year].iteritems()
-]
-# Plot all-time mean for comparison.
-fig.add_trace(
-    go.Scatter(
-        x=df_crop.columns,
-        y=mean,
-        hoverinfo='text',
-        hovertext=text_list,
-        name='Mean of all years',
-        mode='lines+markers'
-    )
-)
+        fig.add_trace(go.Scattergl(
+            x=min_series.index,
+            y=min_series,
+            hoverinfo='text',
+            hovertext=text_list,
+            name='All-city min',
+            line={'color': get_color('temperature', 'min')},
+            opacity=opacity
+        ))
 
-# Make it pretty and informative.
-fig.update_xaxes(title={'text': 'Months'})
-fig.update_yaxes(title={'text': 'Temperature [deg C]'})
+        text_list = [
+            f"{idx.title()} {year}<br>" +
+            f"{item} deg C maximum in {stat_df.loc[idx].idxmax()}"
+            for idx, item in max_series.iteritems()
+        ]
+        fig.add_trace(go.Scattergl(
+            x=max_series.index,
+            y=max_series,
+            hoverinfo='text',
+            hovertext=text_list,
+            name='All-city max',
+            line={'color': get_color('temperature', 'max')},
+            opacity=opacity
+        ))
+
+# Case when reference shapes are chosen.
+elif ref_option == 'Min-mean-max shapes':
+    # Handle missing data.
+    # Find indices where the series doesn't have null values.
+    valid_idx = min_series.notnull()
+    # Use those indices to put together x and y value lists.
+    x_part = [col for idx, col in enumerate(df_crop.columns) if valid_idx[idx]]
+    x = x_part + list(reversed(x_part))
+
+    y_mean_part = [val for idx, val in enumerate(mean_series) if valid_idx[idx]]
+    y_part = [val for idx, val in enumerate(min_series) if valid_idx[idx]]
+    y_min = y_part + list(reversed(y_mean_part))
+    y_part = [val for idx, val in enumerate(max_series) if valid_idx[idx]]
+    y_max = y_part + list(reversed(y_mean_part))
+
+    # Plot the min and max areas as filled polygons.
+    fig.add_trace(
+        go.Scatter(
+            x=x,
+            y=y_min,
+            fill='toself',
+            mode='none',
+            marker={'color': get_color('temperature', 'min')},
+            showlegend=False,
+            hoverinfo='none'
+        )
+    )
+    fig.add_trace(
+        go.Scatter(
+            x=x,
+            y=y_max,
+            fill='toself',
+            mode='none',
+            marker={'color': get_color('temperature', 'max')},
+            showlegend=False,
+            hoverinfo='none'
+        )
+    )
+
+# Print all selected cities.
+for city_name in (city for city in city_dict if city in selected_cities_list):
+    # Plot data from selected year if present.
+    if year in city_dict[city_name].index:
+        # Create hovertext.
+        text_list = [
+            f"{city_name}, {idx.title()} {year}<br>" +
+            f"{item} deg C"
+            for idx, item in city_dict[city_name].loc[year].iteritems()
+        ]
+
+        fig.add_trace(go.Scattergl(
+            x=city_dict[city_name].columns,
+            y=city_dict[city_name].loc[year],
+            hoverinfo='text',
+            hovertext=text_list,
+            line={'color': cmap[city_name]},
+            name=city_name
+        ))
+
+# Set up the layout.
+fig.update_xaxes(title='Datetime')
+fig.update_yaxes(title='Temperature [deg C]')
 fig.update_layout(
-    title='Temperature for ' + city_name + ' in ' + str(year),
+    title=f"Temperature for brazilian cities in {year}",
     hovermode='x',
     height=600,
     width=1100
