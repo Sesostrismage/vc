@@ -3,7 +3,7 @@ import plotly.express as px
 cdict = {
     'temperature': {
         'value': 'black',
-        'reference': '#999999',
+        'mean': '#999999',
         'min': 'blue',
         'max': 'red'
     }
