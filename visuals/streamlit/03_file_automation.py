@@ -92,11 +92,11 @@ if show_mean_bool:
 
 fig = go.Figure()
 
-for file_name in city_dict:
-    if year in city_dict[file_name].index:
+for city_name in (city for city in city_dict if city in selected_cities_list):
+    if year in city_dict[city_name].index:
         # Plot data from selected year if present.
         fig.add_trace(go.Scattergl(
-            x=city_dict[file_name].columns, y=city_dict[file_name].loc[year], name=file_name
+            x=city_dict[city_name].columns, y=city_dict[city_name].loc[year], name=city_name
         ))
 
 if show_mean_bool:
