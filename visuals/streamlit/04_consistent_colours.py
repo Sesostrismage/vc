@@ -5,6 +5,7 @@ import pandas as pd
 import streamlit as st
 
 from vc.definitions import ROOT_DIR
+from vc.visuals.colors import map_color_sequence
 
 
 ####################################################################
@@ -37,6 +38,9 @@ for file_name in file_name_list:
     df_crop[df_crop > 100] = np.nan
     # Insert dataframe into file dict.
     city_dict[city_name] = df_crop
+
+# Get fixed colormap.
+cmap = map_color_sequence(city_dict.keys())
 
 
 ####################################################################
@@ -71,6 +75,10 @@ year = st.sidebar.selectbox(
     index=len(year_list)-1
 )
 
+consistent_color_bool = st.sidebar.checkbox(
+    'Consistent colormap?',
+)
+
 show_mean_bool = st.sidebar.checkbox(
     'Show mean value?'
 )
@@ -78,10 +86,10 @@ show_mean_bool = st.sidebar.checkbox(
 if show_mean_bool:
     mean_df = pd.DataFrame()
 
-    for file_name in city_dict:
-        if year in city_dict[file_name].index:
+    for city_name in city_dict:
+        if year in city_dict[city_name].index:
             #Build mean df.
-            mean_df = pd.concat([mean_df, pd.DataFrame({file_name: city_dict[file_name].loc[year]})], axis=1)
+            mean_df = pd.concat([mean_df, pd.DataFrame({city_name: city_dict[city_name].loc[year]})], axis=1)
 
     mean_series = mean_df.mean(axis=1)
 
@@ -92,12 +100,23 @@ if show_mean_bool:
 
 fig = go.Figure()
 
-for file_name in city_dict:
-    if year in city_dict[file_name].index:
-        # Plot data from selected year if present.
-        fig.add_trace(go.Scattergl(
-            x=city_dict[file_name].columns, y=city_dict[file_name].loc[year], name=file_name
-        ))
+for city_name in (city for city in city_dict if city in selected_cities_list):
+    if year in city_dict[city_name].index:
+        if consistent_color_bool:
+            # Plot data from selected year if present.
+            fig.add_trace(go.Scattergl(
+                x=city_dict[city_name].columns,
+                y=city_dict[city_name].loc[year],
+                line={'color': cmap[city_name]},
+                name=city_name
+            ))
+        else:
+            # Plot data from selected year if present.
+            fig.add_trace(go.Scattergl(
+                x=city_dict[city_name].columns,
+                y=city_dict[city_name].loc[year],
+                name=city_name
+            ))
 
 if show_mean_bool:
     fig.add_trace(go.Scattergl(
