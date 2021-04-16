@@ -90,7 +90,7 @@ year = st.sidebar.selectbox(
 
 fig = go.Figure()
 
-for file_name in file_dict:
+for file_name in (fname for fname in file_dict if fname in selected_files_list):
     if year in file_dict[file_name].index:
         # Plot data from selected year if present.
         fig.add_trace(go.Scattergl(
