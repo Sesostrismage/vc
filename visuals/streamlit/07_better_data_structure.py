@@ -122,6 +122,12 @@ min_series = df.loc[dt_idx].min(axis=1)
 max_series = df.loc[dt_idx].max(axis=1)
 mean_series = df.loc[dt_idx].mean(axis=1)
 
+# Choose whether or not to have a fixed y-axis.
+fixed_yaxis_bool = st.sidebar.checkbox(
+    'Fixed y-axis?',
+    value=False
+)
+
 
 ####################################################################
 # Plotting.
@@ -170,16 +176,27 @@ fig.add_trace(
 
 # Plot all selected cities.
 for city_name in plot_df.columns:
-        text_list = ['So empty...' for idx, row in plot_df.iterrows()]
+    if month_bool:
+        text_list = [
+            f"{city_name} - {month_dict[month]} {idx.year}<br>" +
+            f"{row[city_name]} deg C"
+            for idx, row in plot_df.iterrows()
+        ]
+    else:
+        text_list = [
+            f"{city_name} - {idx}<br>" +
+            f"{row[city_name]} deg C"
+            for idx, row in plot_df.iterrows()
+        ]
 
-        fig.add_trace(go.Scattergl(
-            x=plot_df.index,
-            y=plot_df[city_name],
-            hoverinfo='text',
-            hovertext=text_list,
-            line={'color': cmap[city_name]},
-            name=city_name
-        ))
+    fig.add_trace(go.Scattergl(
+        x=plot_df.index,
+        y=plot_df[city_name],
+        hoverinfo='text',
+        hovertext=text_list,
+        line={'color': cmap[city_name]},
+        name=city_name
+    ))
 
 if month_bool:
     title = f"Temperature for brazilian cities in {month_dict[month]}"
@@ -188,7 +205,11 @@ else:
 
 # Set up the layout.
 fig.update_xaxes(title='Datetime')
-fig.update_yaxes(title='Temperature [deg C]', range=[df.min().min(), df.max().max()])
+fig.update_yaxes(title='Temperature [deg C]')
+
+if fixed_yaxis_bool:
+    fig.update_yaxes(range=[df.min().min(), df.max().max()])
+
 fig.update_layout(
     title=title,
     hovermode='x',
