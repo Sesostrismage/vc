@@ -1,17 +1,12 @@
-import datetime
 import matplotlib
 from matplotlib import cm
 import matplotlib.pyplot as plt
-import numpy as np
-import os
 import pandas as pd
-from plotly.figure_factory import create_scatterplotmatrix
 import plotly.graph_objects as go
 import pydeck as pdk
 import streamlit as st
 
 from vc.data_io import files
-from vc.data_treat.maps import map_range
 from vc.ref_data.braz_cities_locations import loc
 import vc.visuals.streamlit_tools as stt
 import vc.visuals.plotly_tools.hovertext as pt_hover
@@ -21,6 +16,7 @@ import vc.visuals.plotly_tools.trace as pt_trace
 stt.settings()
 
 # IMPROVE Add title.
+# TODO Dostrings.
 # Folder path to data files.
 folder_path = r"C:/Data/temperature_time-series_for_brazilian_cities/"
 
@@ -47,7 +43,8 @@ if month_bool:
 else:
     options = list(df.index)
 
-if plot_mode in ['Line plot']:
+
+if plot_mode == 'Line plot':
     city = st.sidebar.selectbox(
         'Choose city',
         options=df.columns
@@ -68,34 +65,11 @@ if plot_mode in ['Line plot']:
         st.error('Date start is greater than date end!')
         st.stop()
 
-
-
     range_df = df.loc[date_start:date_end]
     range_df = range_df[range_df.index.isin(options)]
 
     city_series = range_df[city]
 
-elif plot_mode == 'Map plot':
-    if month_bool:
-        month = st.sidebar.slider(
-            'Choose month',
-            min_value=1,
-            max_value=12,
-            step=1
-        )
-        options = [dt for dt in df.index if dt.month == month]
-
-    else:
-        options = list(df.index)
-
-    date_show = st.sidebar.select_slider(
-        'Show date',
-        options=options,
-        value=options[-1]
-    )
-
-
-if plot_mode == 'Line plot':
     fig = go.Figure()
     fig = pt_trace.minmax_shapes(fig, range_df, axis=1)
 
@@ -113,9 +87,16 @@ if plot_mode == 'Line plot':
         )
     )
     fig = pt_layout.braz_cities_temp_all(fig, city_series)
+    fig.update_yaxes(range=[df.min().min(), df.max().max()])
     st.plotly_chart(fig)
 
 elif plot_mode == 'Map plot':
+    date_show = st.sidebar.select_slider(
+        'Show date',
+        options=options,
+        value=options[-1]
+    )
+
     temp_series = df.loc[date_show]
     temp_series.dropna(how='any', inplace=True)
 
@@ -143,9 +124,9 @@ elif plot_mode == 'Map plot':
 
     for city, temp in temp_series_norm.iteritems():
         k = matplotlib.colors.colorConverter.to_rgb(cmap(temp))
-        plot_df.loc[city, 'r'] = k[0] * 255
-        plot_df.loc[city, 'g'] = k[1] * 255
-        plot_df.loc[city, 'b'] = k[2] * 255
+        plot_df.loc[city, 'r'] = int(k[0] * 255)
+        plot_df.loc[city, 'g'] = int(k[1] * 255)
+        plot_df.loc[city, 'b'] = int(k[2] * 255)
 
     plot_df['lat'] = 0
     plot_df['lon'] = 0
