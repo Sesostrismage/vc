@@ -22,6 +22,12 @@ file_name_list = os.listdir(folder_path)
 # Empty dataframe to receive data.
 df = pd.DataFrame()
 
+month_dict = {
+    1: 'January', 2: 'February', 3: 'March', 4: 'April',
+    5: 'May', 6: 'June', 7: 'July', 8: 'August',
+    9: 'September', 10: 'October', 11: 'November', 12: 'December'
+}
+
 # Loop through all file names and load the data.
 for file_name in file_name_list:
     # Generate city name from file name.
@@ -73,11 +79,10 @@ month_bool = st.sidebar.checkbox(
     value=False
 )
 if month_bool:
-    month = st.sidebar.slider(
+    month = st.sidebar.select_slider(
         'Choose month',
-        min_value=1,
-        max_value=12,
-        step=1
+        options=range(1, 13),
+        format_func=month_dict.get
     )
 
     year_list = sorted(set([dt.year for dt in df.loc[~na_idx].index]))
@@ -96,8 +101,7 @@ if month_bool:
     )
 
     dt_idx = [True if ((year_start <= dt.year <= year_end) and (dt.month == month)) else False for dt in df.index]
-    dt_city_slice_df = df.loc[dt_idx & ~na_idx, city_idx]
-    st.dataframe(dt_city_slice_df)
+    plot_df = df.loc[dt_idx & ~na_idx, city_idx]
 
 else:
     date_start = st.sidebar.select_slider(
@@ -112,7 +116,7 @@ else:
     )
 
     dt_idx = (date_start <= df.index) & (df.index <= date_end)
-    dt_city_slice_df = df.loc[dt_idx & ~na_idx, city_idx]
+    plot_df = df.loc[dt_idx & ~na_idx, city_idx]
 
 min_series = df.loc[dt_idx].min(axis=1)
 max_series = df.loc[dt_idx].max(axis=1)
@@ -165,23 +169,28 @@ fig.add_trace(
 )
 
 # Plot all selected cities.
-for city_name in dt_city_slice_df.columns:
-        text_list = ['So empty...' for idx, row in dt_city_slice_df.iterrows()]
+for city_name in plot_df.columns:
+        text_list = ['So empty...' for idx, row in plot_df.iterrows()]
 
         fig.add_trace(go.Scattergl(
-            x=dt_city_slice_df.index,
-            y=dt_city_slice_df[city_name],
+            x=plot_df.index,
+            y=plot_df[city_name],
             hoverinfo='text',
             hovertext=text_list,
             line={'color': cmap[city_name]},
             name=city_name
         ))
 
+if month_bool:
+    title = f"Temperature for brazilian cities in {month_dict[month]}"
+else:
+    title = f"Temperature for brazilian cities"
+
 # Set up the layout.
 fig.update_xaxes(title='Datetime')
-fig.update_yaxes(title='Temperature [deg C]')
+fig.update_yaxes(title='Temperature [deg C]', range=[df.min().min(), df.max().max()])
 fig.update_layout(
-    title=f"Temperature for brazilian cities",
+    title=title,
     hovermode='x',
     height=600,
     width=1100
