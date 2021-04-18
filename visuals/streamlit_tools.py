@@ -1,4 +1,5 @@
 import os
+import pandas as pd
 
 import streamlit as st
 
@@ -19,18 +20,18 @@ def file_name_from_folder(folder_path: str):
 
     return file_name, city_name, file_name_list
 
-def multiselect_cities(data_dict: dict) -> list:
-    selected_cities_list = st.sidebar.multiselect(
+def multiselect_cities(df: pd.DataFrame) -> list:
+    city_idx = st.sidebar.multiselect(
         'Select cities to view',
-        options=list(data_dict.keys()),
-        default=list(data_dict.keys())
+        options=list(df.columns),
+        default=[df.columns[0]]
     )
-
-    if len(selected_cities_list) == 0:
+    # Check if any cities have been selected and warn the user if not.
+    if len(city_idx) == 0:
         st.error('No cities are selected.')
         st.stop()
 
-    return selected_cities_list
+    return city_idx
 
 def select_year(min_year: int, max_year: int) -> st.sidebar.selectbox:
     year = st.sidebar.selectbox(

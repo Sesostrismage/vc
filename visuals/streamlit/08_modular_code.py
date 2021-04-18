@@ -5,8 +5,10 @@ import os
 import pandas as pd
 import streamlit as st
 
-from vc.definitions import ROOT_DIR
+from vc.data_io import files
+from vc.data_treat.maps import month_dict
 from vc.visuals.colors import get_color, map_color_sequence
+import vc.visuals.streamlit_tools as stt
 
 
 ####################################################################
@@ -15,42 +17,10 @@ from vc.visuals.colors import get_color, map_color_sequence
 
 # Standard Streamlit settings.
 st.set_page_config(layout='wide')
-# Folder path with root of vc dirextory automatically detected.
-folder_path = os.path.join(ROOT_DIR, 'datasets', 'temp_brazil_cities', 'raw_data')
-# File name list from reading the folder contents.
-file_name_list = os.listdir(folder_path)
-# Empty dataframe to receive data.
-df = pd.DataFrame()
+st.title(os.path.basename(__file__))
 
-month_dict = {
-    1: 'January', 2: 'February', 3: 'March', 4: 'April',
-    5: 'May', 6: 'June', 7: 'July', 8: 'August',
-    9: 'September', 10: 'October', 11: 'November', 12: 'December'
-}
-
-# Loop through all file names and load the data.
-for file_name in file_name_list:
-    # Generate city name from file name.
-    city_name = file_name[8:-4].replace('_', ' ').title()
-
-    # Load data into Pandas DataFrame with first row as column names and first column as index names.
-    city_df = pd.read_csv(
-        os.path.join(folder_path, file_name),
-        header=0,
-        index_col=0
-    )
-    # Remove pre-generated average columns.
-    city_df = city_df.drop(['D-J-F', 'M-A-M', 'J-J-A', 'S-O-N', 'metANN'], axis=1)
-    # Set erroneous values to NaN so they don't disturb the results.
-    city_df[city_df > 100] = np.nan
-
-    city_df.columns = [idx+1 for idx, _ in enumerate(city_df.columns)]
-    stacked_df = city_df.stack()
-    stacked_df.index = [datetime.date(i[0], i[1], 1) for i in stacked_df.index]
-    df = pd.concat([df, pd.DataFrame({city_name: stacked_df})], axis=1)
-
-df.sort_index(inplace=True)
-
+# DataFrame with city data.
+df = files.braz_cities_temp()
 # Get fixed colormap.
 cmap = map_color_sequence(df.columns)
 
@@ -59,19 +29,11 @@ cmap = map_color_sequence(df.columns)
 # User input and calculations.
 ####################################################################
 
-# Multi-select which cities to plot.
-city_idx = st.sidebar.multiselect(
-    'Select cities to view',
-    options=list(df.columns),
-    default=[df.columns[0]]
-)
-# Check if any cities have been selected and warn the user if not.
-if len(city_idx) == 0:
-    st.error('No cities are selected.')
-    st.stop()
+# Get index of cities to plot.
+city_idx = stt.multiselect_cities(df)
 
-city_slice_df = df[city_idx]
-na_idx = city_slice_df.isnull().all(axis=1)
+city_df = df[city_idx]
+notnull_idx = city_df.notnull().all(axis=1)
 
 # Choose whether or not to only show a single month per year.
 month_bool = st.sidebar.checkbox(
@@ -85,7 +47,7 @@ if month_bool:
         format_func=month_dict.get
     )
 
-    year_list = sorted(set([dt.year for dt in df.loc[~na_idx].index]))
+    year_list = sorted(set([dt.year for dt in df.loc[notnull_idx].index]))
 
     year_start = st.sidebar.slider(
         'Start year',
@@ -101,22 +63,22 @@ if month_bool:
     )
 
     dt_idx = [True if ((year_start <= dt.year <= year_end) and (dt.month == month)) else False for dt in df.index]
-    plot_df = df.loc[dt_idx & ~na_idx, city_idx]
+    plot_df = df.loc[dt_idx & notnull_idx, city_idx]
 
 else:
     date_start = st.sidebar.select_slider(
         'Start date',
-        options=list(city_slice_df.index)
+        options=list(city_df.index)
     )
 
     date_end = st.sidebar.select_slider(
         'End date',
-        options=list(city_slice_df.loc[date_start:].index),
-        value=list(city_slice_df.index)[-1]
+        options=list(city_df.loc[date_start:].index),
+        value=list(city_df.index)[-1]
     )
 
     dt_idx = (date_start <= df.index) & (df.index <= date_end)
-    plot_df = df.loc[dt_idx & ~na_idx, city_idx]
+    plot_df = df.loc[dt_idx & notnull_idx, city_idx]
 
 min_series = df.loc[dt_idx].min(axis=1)
 max_series = df.loc[dt_idx].max(axis=1)
