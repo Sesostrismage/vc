@@ -5,7 +5,7 @@ import pandas as pd
 
 from vc.definitions import ROOT_DIR
 
-def braz_cities_temp(mode: str='dict'):
+def braz_cities_temp(mode: str='agg'):
     folder_path = os.path.join(ROOT_DIR, 'datasets', 'temp_brazil_cities', 'raw_data')
 
     def load_file(file_path: str) -> pd.DataFrame:
