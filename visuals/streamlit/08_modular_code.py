@@ -50,6 +50,7 @@ fig = pt_shapes.minmax_temp(fig, stat_dict)
 for city_name in plot_df.columns:
     fig = pt_trace.braz_cities_temp(fig, plot_df, city_name, month, cmap)
 
+# Apply fixed y-axis if requested.
 if fixed_yaxis_bool:
     fig.update_yaxes(range=[stat_dict['min_total'], stat_dict['max_total']])
 
