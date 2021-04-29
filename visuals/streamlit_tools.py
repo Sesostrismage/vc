@@ -1,6 +1,6 @@
-import os
-import pandas as pd
-
+from matplotlib import cm
+import matplotlib.pyplot as plt
+import plotly.colors
 import streamlit as st
 
 from vc.data_treat.maps import month_dict
@@ -71,3 +71,27 @@ def braz_cities_choose_data(city_data: CitiesTempData):
         plot_df, stat_dict = city_data.get_data(date_start=date_start, date_end=date_end)
 
     return plot_df, stat_dict, month
+
+
+def cmap_matplotlib():
+    cmap_name = st.sidebar.selectbox(
+        'Choose colormap',
+        options=plt.colormaps(),
+        index=plt.colormaps().index('jet')
+    )
+    cmap = cm.get_cmap(cmap_name)
+
+    return cmap
+
+
+def cmap_plotly():
+    full_list = plotly.colors.sequential.__dict__.keys()
+    pruned_list = [item for item in full_list if ((not item.startswith('_')) and (not item.startswith('swatches')))]
+
+    colorscale = st.sidebar.selectbox(
+        'Choose colormap',
+        options=pruned_list,
+        index=pruned_list.index('Jet')
+    )
+
+    return colorscale

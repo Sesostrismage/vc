@@ -22,3 +22,16 @@ def braz_cities_temp_per_year(month: int=None) -> go.Figure:
     )
 
     return fig
+
+
+def heatmap_fig() -> go.Figure:
+    fig = go.Figure()
+    fig.update_xaxes(title={'text': 'City'})
+    fig.update_yaxes(title={'text': 'Datetime'})
+    fig.update_layout(
+        title=f"Temperature heatmap for brazilian cities",
+        height=height_standard,
+        width=width_standard
+    )
+
+    return fig
