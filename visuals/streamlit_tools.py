@@ -22,6 +22,14 @@ def multiselect_cities(city_data: CitiesTempData):
 
     city_data.set_city_selection(city_idx)
 
+def select_city(city_data: CitiesTempData):
+    city = st.sidebar.selectbox(
+        'Select cities to view',
+        options=city_data.get_cities(selection_only=False)
+    )
+    return city
+
+
 def braz_cities_choose_data(city_data: CitiesTempData):
         # Choose whether or not to only show a single month per year.
     month_bool = st.sidebar.checkbox(

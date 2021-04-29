@@ -18,15 +18,7 @@ st.title(os.path.basename(__file__))
 # Object with city temp data.
 city_data = CitiesTempData()
 
-city_data = CitiesTempData()
 df, stat_dict = city_data.get_data()
-
-
-####################################################################
-# User input and calculations.
-####################################################################
-
-colorscale = stt.cmap_plotly()
 
 
 ####################################################################
@@ -38,9 +30,7 @@ fig.add_trace(
     go.Heatmap(
         x=df.columns,
         y=df.index,
-        z=df,
-        colorscale=colorscale
+        z=df
     )
 )
-
 st.plotly_chart(fig)
