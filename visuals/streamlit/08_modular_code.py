@@ -44,6 +44,7 @@ fixed_yaxis_bool = st.sidebar.checkbox(
 
 # Create figure.
 fig = pt_figure.braz_cities_temp_per_year(month=month)
+# Add shapes for min and max temperatures.
 fig = pt_shapes.minmax_temp(fig, stat_dict)
 
 # Plot all selected cities.
