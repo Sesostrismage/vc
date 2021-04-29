@@ -3,41 +3,71 @@ import pandas as pd
 
 import streamlit as st
 
+from vc.data_treat.maps import month_dict
+from vc.datasets.temp_brazil_cities.cities_data import CitiesTempData
+
 def settings():
     st.set_page_config(layout='wide')
 
-def file_name_from_folder(folder_path: str):
-    # Get file names automatically from the folder.
-    file_name_list = os.listdir(folder_path)
-
-    #Selectbox to choose the file.
-    file_name = st.sidebar.selectbox(
-        'Choose file name',
-        options=file_name_list
-    )
-    # Translate into city name.
-    city_name = file_name[8:-4].replace('_', ' ').title()
-
-    return file_name, city_name, file_name_list
-
-def multiselect_cities(df: pd.DataFrame) -> list:
+def multiselect_cities(city_data: CitiesTempData):
     city_idx = st.sidebar.multiselect(
         'Select cities to view',
-        options=list(df.columns),
-        default=[df.columns[0]]
+        options=city_data.get_cities(selection_only=False),
+        default=[city_data.get_cities(selection_only=False)[0]]
     )
     # Check if any cities have been selected and warn the user if not.
     if len(city_idx) == 0:
         st.error('No cities are selected.')
         st.stop()
 
-    return city_idx
+    city_data.set_city_selection(city_idx)
 
-def select_year(min_year: int, max_year: int) -> st.sidebar.selectbox:
-    year = st.sidebar.selectbox(
-        'Choose year to view',
-        options=range(min_year, max_year+1),
-        index=len(range(min_year, max_year+1))-2
+def braz_cities_choose_data(city_data: CitiesTempData):
+        # Choose whether or not to only show a single month per year.
+    month_bool = st.sidebar.checkbox(
+        'Filter by month?',
+        value=False
     )
+    if month_bool:
+        month = st.sidebar.select_slider(
+            'Choose month',
+            options=range(1, 13),
+            format_func=month_dict.get
+        )
 
-    return year
+        year_list = city_data.get_year_list()
+
+        year_start = st.sidebar.slider(
+            'Start year',
+            min_value=year_list[0],
+            max_value=year_list[-1]
+        )
+
+        year_end = st.sidebar.slider(
+            'End year',
+            min_value=year_start,
+            max_value=year_list[-1],
+            value=year_list[-1]
+        )
+
+        plot_df, stat_dict = city_data.get_data(year_start=year_start, year_end=year_end, month=month)
+
+    else:
+        dt_series = city_data.get_datetimes()
+
+        date_start = st.sidebar.select_slider(
+            'Start date',
+            options=list(dt_series)
+        )
+
+        date_end = st.sidebar.select_slider(
+            'End date',
+            options=list(dt_series[dt_series >= date_start]),
+            value=dt_series[-1]
+        )
+
+        month = None
+
+        plot_df, stat_dict = city_data.get_data(date_start=date_start, date_end=date_end)
+
+    return plot_df, stat_dict, month

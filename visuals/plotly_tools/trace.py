@@ -4,11 +4,25 @@ import plotly.graph_objects as go
 from vc.visuals.colors import get_color
 import vc.visuals.plotly_tools.hovertext as pt_hover
 
-def braz_cities_mean(mean_series: pd.Series) -> go.Trace:
-    #TODO Hovertext for mean series.
-    trace = go.Scattergl(x=mean_series.index, y=mean_series, name='All-city mean')
+def braz_cities_temp(
+    fig: go.Figure,
+    plot_df: pd.DataFrame,
+    city_name: str,
+    month: int,
+    cmap
+):
+    text_list = pt_hover.braz_cities_temp(plot_df, city_name, month)
 
-    return trace
+    fig.add_trace(go.Scattergl(
+        x=plot_df.index,
+        y=plot_df[city_name],
+        hoverinfo='text',
+        hovertext=text_list,
+        line={'color': cmap[city_name]},
+        name=city_name
+    ))
+
+    return fig
 
 
 def braz_cities_temp_v1(series: pd.Series, city_name: list, trace_name: str) -> go.Scatter:
@@ -63,44 +77,3 @@ def braz_cities_temp_v2(
     )
 
     return trace
-
-
-def minmax_shapes(
-    fig: go.Figure,
-    df: pd.DataFrame,
-    axis: int=0
-):
-
-    if axis == 0:
-        x = list(df.columns) + list(df.columns[::-1])
-    else:
-        x = list(df.index) + list(df.index[::-1])
-
-    y_min = list(df.min(axis=axis)) + list(df.mean(axis=axis)[::-1])
-    y_max = list(df.max(axis=axis)) + list(df.mean(axis=axis)[::-1])
-
-    fig.add_trace(
-        go.Scatter(
-            x=x,
-            y=y_min,
-            fill='toself',
-            mode='none',
-            marker={'color': get_color('temperature', 'min')},
-            showlegend=False,
-            hoverinfo='none'
-        )
-    )
-
-    fig.add_trace(
-        go.Scatter(
-            x=x,
-            y=y_max,
-            fill='toself',
-            mode='none',
-            marker={'color': get_color('temperature', 'max')},
-            showlegend=False,
-            hoverinfo='none'
-        )
-    )
-
-    return fig
