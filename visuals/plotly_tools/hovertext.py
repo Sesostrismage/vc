@@ -1,6 +1,29 @@
 import pandas as pd
 
+from vc.data_treat import maps
+
 def braz_cities_temp(
+    plot_df: pd.DataFrame,
+    city_name: str,
+    month: int
+):
+    if month is not None:
+        text_list = [
+            f"{city_name} - {maps.month_dict[month]} {idx.year}<br>" +
+            f"{row[city_name]} deg C"
+            for idx, row in plot_df.iterrows()
+        ]
+    else:
+        text_list = [
+            f"{city_name} - {idx}<br>" +
+            f"{row[city_name]} deg C"
+            for idx, row in plot_df.iterrows()
+        ]
+
+    return text_list
+
+
+def braz_cities_temp_old(
     series: pd.Series,
     city_name: str,
     timespan,

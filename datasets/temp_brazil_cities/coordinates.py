@@ -1,4 +1,4 @@
-loc = {
+coords = {
     'Belem': {'lat': -1.4, 'lon': -48.49},
     'Curitiba': {'lat': -25.42, 'lon': -49.26},
     'Fortaleza': {'lat': -3.73, 'lon': -38.52},
