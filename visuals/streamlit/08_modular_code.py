@@ -13,8 +13,8 @@ import vc.visuals.streamlit_tools as stt
 
 # Standard Streamlit settings.
 st.set_page_config(layout='wide')
+# Title becomes the file name for easy reference to the presentation.
 st.title(os.path.basename(__file__))
-
 # Object with city temp data.
 city_data = CitiesTempData()
 # Get fixed colormap for the cities.
@@ -27,10 +27,8 @@ cmap = map_color_sequence(city_data.get_cities())
 
 # Get index of cities to plot.
 stt.multiselect_cities(city_data)
-
 # Choose data ranges and get data.
 plot_df, stat_dict, month = stt.braz_cities_choose_data(city_data)
-
 # Choose whether or not to have a fixed y-axis.
 fixed_yaxis_bool = st.sidebar.checkbox(
     'Fixed y-axis?',
