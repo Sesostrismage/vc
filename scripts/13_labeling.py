@@ -21,11 +21,8 @@ selection_mode = 'Add'
 
 reset_code = """document.querySelectorAll('.bk-tool-icon-reset[title="Reset"]').forEach(d => d.click())"""
 
-source_data_dict = {'datetime': [], 'temperature': [], 'color': [], 'size': []}
-
-def reset_data():
-    global source
-    source.data = source_data_dict
+circle_data_dict = {'datetime': [], 'temperature': [], 'color': [], 'size': []}
+line_data_dict = {'datetime': [], 'temperature': []}
 
 city_obj = CitiesTempData()
 city_df, stat_dict = city_obj.get_data()
@@ -43,6 +40,7 @@ def city_name_dropdown_handler(event):
 
     city_name = event.item
     city_name_dropdown.label = city_name
+    city_name_dropdown.button_type = 'default'
     labeler = CityDataLabeler(city_name)
     update_data()
 
@@ -60,7 +58,7 @@ def update_data():
     global color_series
     global labeler
     global city_name
-    global source
+    global circle_source
     global remove_dt_list
 
     if city_name is not None:
@@ -80,19 +78,25 @@ def update_data():
 
         size_series = tag_series.map({0: 5, 1: 25})
         color_series = tag_series.map({0: cdict['default'], 1: cdict['tagged']})
-        source.data = {
+        circle_source.data = {
             'datetime': city_df.index,
             'temperature': city_df[city_name],
             'color': color_series,
             'tagged': tag_series,
             'size': size_series
         }
+        line_source.data = {
+            'datetime': city_df.index,
+            'temperature': city_df[city_name]
+        }
 
         fig.title.text = f"{city_name}"
         fig.title.background_fill_color = "#ffffff"
 
-source = ColumnDataSource(data = source_data_dict)
-source.name = 'test'
+circle_source = ColumnDataSource(data = circle_data_dict)
+circle_source.name = 'Circles'
+line_source = ColumnDataSource(data = line_data_dict)
+line_source.name = 'Lines'
 
 fig = figure(
     title='Density plot',
@@ -108,25 +112,34 @@ fig.xaxis.formatter=DatetimeTickFormatter(
     hours=axis_format_str,
     minutes=axis_format_str
 )
-temp_plot = fig.circle(
+#FIXME Line plot also gets selected by select tool.
+temp_lines = fig.line(
+    'datetime',
+    'temperature',
+    line_color='black',
+    circle_source=circle_source,
+    name='temp_line'
+)
+temp_circles = fig.circle(
     'datetime',
     'temperature',
     line_color=None,
     fill_color='color',
-    source=source,
+    circle_source=circle_source,
     size='size',
-    name='temp_plot'
+    name='temp_circles'
 )
-temp_plot.selection_glyph = Circle(size=15, fill_alpha=1, fill_color=cdict[selection_mode], line_color=None)
-temp_plot.nonselection_glyph = Circle(fill_alpha=1, fill_color='color', line_color=None)
-box_select_tool = BoxSelectTool(renderers=[temp_plot])
+temp_circles.selection_glyph = Circle(size=15, fill_alpha=1, fill_color=cdict[selection_mode], line_color=None)
+temp_circles.nonselection_glyph = Circle(fill_alpha=1, fill_color='color', line_color=None)
+box_select_tool = BoxSelectTool(renderers=[temp_circles])
 fig.add_tools(box_select_tool)
+fig.toolbar.active_drag = box_select_tool
 
 def select_mode_dropdown_handler(event):
     global selection_mode
     selection_mode = event.item
     color = cdict[selection_mode]
-    temp_plot.selection_glyph.update(fill_color=color)
+    temp_circles.selection_glyph.update(fill_color=color)
     select_mode_dropdown.label = f"Selection mode: {selection_mode}"
 
     if selection_mode == 'Add':
@@ -144,15 +157,15 @@ select_mode_dropdown.on_click(select_mode_dropdown_handler)
 def update_labels_handler(event):
     global update_labels_button
     global data_dict
-    global source
+    global circle_source
     global tag_series
 
     if selection_mode == 'Add':
-        tag_series.iloc[source.selected.indices] = 1
+        tag_series.iloc[circle_source.selected.indices] = 1
     else:
-        tag_series.iloc[source.selected.indices] = 0
+        tag_series.iloc[circle_source.selected.indices] = 0
 
-    tag_dt_list = list(tag_series.iloc[source.selected.indices].index)
+    tag_dt_list = list(tag_series.iloc[circle_source.selected.indices].index)
 
     if selection_mode == 'Add':
         labeler.insert_datetimes(tag_dt_list)
@@ -161,11 +174,11 @@ def update_labels_handler(event):
 
     color_series = tag_series.map({0: cdict['default'], 1: cdict['tagged']})
     size_series = tag_series.map({0: 5, 1: 25})
-    source.data['tagged'] = tag_series
-    source.data['color'] = color_series
-    source.data['size'] = size_series
+    circle_source.data['tagged'] = tag_series
+    circle_source.data['color'] = color_series
+    circle_source.data['size'] = size_series
 
-    source.selected.indices = []
+    circle_source.selected.indices = []
 
 update_labels_button = Button(label='Update tags', button_type='primary')
 update_labels_button.on_click(update_labels_handler)
