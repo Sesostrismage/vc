@@ -4,7 +4,6 @@ import streamlit as st
 
 from vc.datasets.temp_brazil_cities.cities_data import CitiesTempData
 import vc.visuals.plotly_tools.figure as pt_figure
-import vc.visuals.streamlit_tools as stt
 
 
 ####################################################################
