@@ -52,7 +52,7 @@ class CitiesTempData:
         date_start: datetime.date=None,
         date_end: datetime.date=None
     ) -> pd.DataFrame:
-        out_df = self._df.loc[self._df.notnull().any(axis=1)]
+        out_df = self._df.loc[self._df.notnull().any(axis=1)].copy()
 
         if year_start is not None:
             out_df = out_df.loc[[True if year_start <= dt.year else False for dt in out_df.index]]
@@ -80,4 +80,4 @@ class CitiesTempData:
         if selection_only:
             out_df = out_df[self.city_selection]
 
-        return out_df.copy(), stat_dict
+        return out_df, stat_dict
