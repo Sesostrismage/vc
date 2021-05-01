@@ -6,6 +6,12 @@ cdict = {
         'mean': '#999999',
         'min': 'blue',
         'max': 'red'
+    },
+    'labeling': {
+        'Add': '#00ff00',
+        'Remove': 'red',
+        'default': 'black',
+        'tagged': 'magenta'
     }
 }
 

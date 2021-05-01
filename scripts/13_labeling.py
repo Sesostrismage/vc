@@ -1,22 +1,36 @@
-import datetime
+import os
 import pandas as pd
-import pytz
 
 from bokeh.io import curdoc
 from bokeh.layouts import row, column
-from bokeh.models import Button, Circle, CustomJS, Dropdown, ColumnDataSource, DataTable, DatetimeTickFormatter, DatePicker, TableColumn, TextInput
+from bokeh.models import Button, Circle, CustomJS, Dropdown, ColumnDataSource, DatetimeTickFormatter
 from bokeh.models.tools import BoxSelectTool
 from bokeh.plotting import figure
 
 from vc.datasets.temp_brazil_cities.cities_data import CitiesTempData
 from vc.datasets.temp_brazil_cities.labeler import CityDataLabeler
+from vc.visuals.colors import get_color
 
-cdict = {
-    'Add': '#00ff00',
-    'Remove': 'red',
-    'default': 'black',
-    'tagged': 'magenta'
-}
+####################################################################
+# Utility functions.
+####################################################################
+
+def get_color_series(in_series: pd.Series) -> pd.Series:
+    out_series = in_series.map(
+        {0: get_color('labeling', 'default'), 1: get_color('labeling', 'tagged')}
+    )
+
+    return out_series
+
+def get_size_series(in_series: pd.Series) -> pd.Series:
+    out_series = in_series.map({0: 5, 1: 10})
+
+    return out_series
+
+####################################################################
+# Setup and data loading.
+####################################################################
+
 selection_mode = 'Add'
 
 reset_code = """document.querySelectorAll('.bk-tool-icon-reset[title="Reset"]').forEach(d => d.click())"""
@@ -26,7 +40,6 @@ line_data_dict = {'datetime': [], 'temperature': []}
 
 city_obj = CitiesTempData()
 city_df, stat_dict = city_obj.get_data()
-print(city_df)
 data_dict = {}
 tag_series = pd.Series()
 color_series = pd.Series()
@@ -65,7 +78,6 @@ def update_data():
         labeler = CityDataLabeler(city_name)
         existing_dt_list = labeler.get_datetimes()
 
-        print(city_df)
         tag_series = pd.Series(0, index=city_df.index)
         # Set label series and eliminate any tags not in the data.
         remove_dt_list = []
@@ -76,14 +88,12 @@ def update_data():
             else:
                 remove_dt_list.append(label)
 
-        size_series = tag_series.map({0: 5, 1: 25})
-        color_series = tag_series.map({0: cdict['default'], 1: cdict['tagged']})
         circle_source.data = {
             'datetime': city_df.index,
             'temperature': city_df[city_name],
-            'color': color_series,
+            'color': get_color_series(tag_series),
             'tagged': tag_series,
-            'size': size_series
+            'size': get_size_series(tag_series)
         }
         line_source.data = {
             'datetime': city_df.index,
@@ -102,7 +112,7 @@ fig = figure(
     title='Density plot',
     tools="box_zoom,reset",
     x_axis_type='datetime',
-    plot_width=1500,
+    plot_width=1100,
     plot_height=600
 )
 axis_format_str = "%y-%m-%d %H:%M"
@@ -112,12 +122,12 @@ fig.xaxis.formatter=DatetimeTickFormatter(
     hours=axis_format_str,
     minutes=axis_format_str
 )
-#FIXME Line plot also gets selected by select tool.
+
 temp_lines = fig.line(
     'datetime',
     'temperature',
     line_color='black',
-    circle_source=circle_source,
+    source=line_source,
     name='temp_line'
 )
 temp_circles = fig.circle(
@@ -125,21 +135,30 @@ temp_circles = fig.circle(
     'temperature',
     line_color=None,
     fill_color='color',
-    circle_source=circle_source,
+    source=circle_source,
     size='size',
     name='temp_circles'
 )
-temp_circles.selection_glyph = Circle(size=15, fill_alpha=1, fill_color=cdict[selection_mode], line_color=None)
-temp_circles.nonselection_glyph = Circle(fill_alpha=1, fill_color='color', line_color=None)
+temp_circles.selection_glyph = Circle(
+    size=15,
+    fill_alpha=1,
+    fill_color=get_color('labeling', selection_mode),
+    line_color=None
+)
+temp_circles.nonselection_glyph = Circle(
+    fill_alpha=1,
+    fill_color='color',
+    line_color=None
+)
 box_select_tool = BoxSelectTool(renderers=[temp_circles])
 fig.add_tools(box_select_tool)
 fig.toolbar.active_drag = box_select_tool
 
 def select_mode_dropdown_handler(event):
     global selection_mode
+
     selection_mode = event.item
-    color = cdict[selection_mode]
-    temp_circles.selection_glyph.update(fill_color=color)
+    temp_circles.selection_glyph.update(fill_color=get_color('labeling', selection_mode))
     select_mode_dropdown.label = f"Selection mode: {selection_mode}"
 
     if selection_mode == 'Add':
@@ -172,11 +191,9 @@ def update_labels_handler(event):
     else:
         labeler.remove_datetimes(tag_dt_list)
 
-    color_series = tag_series.map({0: cdict['default'], 1: cdict['tagged']})
-    size_series = tag_series.map({0: 5, 1: 25})
     circle_source.data['tagged'] = tag_series
-    circle_source.data['color'] = color_series
-    circle_source.data['size'] = size_series
+    circle_source.data['color'] = get_color_series(tag_series)
+    circle_source.data['size'] = get_size_series(tag_series)
 
     circle_source.selected.indices = []
 
@@ -195,4 +212,4 @@ curdoc().add_root(
         )
     )
 )
-curdoc().title = "City temperature labeler"
+curdoc().title = os.path.basename(__file__)
