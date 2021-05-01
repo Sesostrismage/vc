@@ -10,6 +10,7 @@ from bokeh.plotting import figure
 from vc.datasets.temp_brazil_cities.cities_data import CitiesTempData
 from vc.datasets.temp_brazil_cities.labeler import CityDataLabeler
 from vc.visuals.colors import get_color
+from vc.visuals.plotly_tools.figure import height_standard, width_standard
 
 ####################################################################
 # Utility functions.
@@ -112,8 +113,8 @@ fig = figure(
     title='Density plot',
     tools="box_zoom,reset",
     x_axis_type='datetime',
-    plot_width=1100,
-    plot_height=600
+    plot_width=width_standard,
+    plot_height=height_standard
 )
 axis_format_str = "%y-%m-%d %H:%M"
 fig.xaxis.formatter=DatetimeTickFormatter(
@@ -140,7 +141,7 @@ temp_circles = fig.circle(
     name='temp_circles'
 )
 temp_circles.selection_glyph = Circle(
-    size=15,
+    size=10,
     fill_alpha=1,
     fill_color=get_color('labeling', selection_mode),
     line_color=None
