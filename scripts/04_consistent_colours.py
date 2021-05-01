@@ -2,10 +2,10 @@ import plotly.graph_objects as go
 import numpy as np
 import os
 import pandas as pd
+import plotly.express as px
 import streamlit as st
 
 from vc.definitions import ROOT_DIR
-from vc.visuals.colors import map_color_sequence
 
 
 ####################################################################
@@ -14,7 +14,9 @@ from vc.visuals.colors import map_color_sequence
 
 # Standard Streamlit settings.
 st.set_page_config(layout='wide')
-# Folder path with root of vc dirextory automatically detected.
+# Title becomes the file name for easy reference to the presentation.
+st.title(os.path.basename(__file__))
+# Folder path with root of vc directory automatically detected.
 folder_path = os.path.join(ROOT_DIR, 'datasets', 'temp_brazil_cities', 'raw_data')
 # File name list from reading the folder contents.
 file_name_list = os.listdir(folder_path)
@@ -39,20 +41,25 @@ for file_name in file_name_list:
     # Insert dataframe into file dict.
     city_dict[city_name] = df_crop
 
-# Get fixed colormap.
-cmap = map_color_sequence(city_dict.keys())
+cmap = {}
+sorted_list = sorted(city_dict.keys())
+
+for idx, item in enumerate(sorted_list):
+    cmap[item] = px.colors.qualitative.Alphabet[idx]
 
 
 ####################################################################
 # User input and calculations.
 ####################################################################
 
+# Multi-select files to load, with all files chosen by default from the dict.
 selected_cities_list = st.sidebar.multiselect(
     'Select cities to view',
     options=sorted(list(city_dict.keys())),
     default=sorted(list(city_dict.keys()))
 )
 
+# If no files are chosen, show a warning and stop the program.
 if len(selected_cities_list) == 0:
     st.error('No cities are selected.')
     st.stop()

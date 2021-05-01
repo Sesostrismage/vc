@@ -2,8 +2,19 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
+####################################################################
+# Common variables.
+####################################################################
+
 # Folder path to data files.
-folder_path = r"D:/Kode/vc/datasets/temp_brazil_cities/"
+folder_path = r"C:/Kode/vc/datasets/temp_brazil_cities/raw_data/"
+
+# Set the year you want to look at.
+year = 1977
+
+####################################################################
+# Load and clean data for each city individually.
+####################################################################
 
 # Load data into Pandas DataFrame with first row as column names and first column as index names.
 belem_df = pd.read_csv(folder_path + 'station_belem.csv', header=0, index_col=0)
@@ -56,11 +67,13 @@ vitoria_df = pd.read_csv(folder_path + 'station_vitoria.csv', header=0, index_co
 vitoria_df = vitoria_df.drop(['D-J-F', 'M-A-M', 'J-J-A', 'S-O-N', 'metANN'], axis=1)
 vitoria_df[vitoria_df > 100] = np.nan
 
-# Set the year you want to look at.
-year = 1977
+
+####################################################################
+# Make mean df by adding data for each city with data from that year.
+####################################################################
 
 mean_df = pd.DataFrame()
-# Plot cities data from selected year.
+
 if year in belem_df.index:
     mean_df = pd.concat([mean_df, pd.DataFrame({'Belem': belem_df.loc[year]})], axis=1)
 if year in curitiba_df.index:
@@ -86,10 +99,16 @@ if year in sao_paulo_df.index:
 if year in vitoria_df.index:
     mean_df = pd.concat([mean_df, pd.DataFrame({'Vitoria': vitoria_df.loc[year]})], axis=1)
 
+
+####################################################################
+# Plotting.
+####################################################################
+
 # Create figure.
 plt.figure()
 
 # Plot cities data from selected year.
+# Comment out a city to remove it from the plot.
 if year in belem_df.index:
     plt.plot(belem_df.columns, belem_df.loc[year], label='Belem')
 if year in curitiba_df.index:
@@ -115,8 +134,9 @@ if year in sao_paulo_df.index:
 if year in vitoria_df.index:
     plt.plot(vitoria_df.columns, vitoria_df.loc[year], label='Vitoria')
 
+# Plot the mean of all chosen cities.
 plt.plot(mean_df.index, mean_df.mean(axis=1), label='Mean')
-
+# Layout.
 plt.xlabel('Months')
 plt.ylabel('Temperature [deg C]')
 plt.title('Temperature for 8 brazilian cities in ' + str(year))
