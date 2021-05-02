@@ -33,7 +33,8 @@ temp_series.dropna(how='any', inplace=True)
 plot_df = pd.DataFrame(
     {
         'city': temp_series.index,
-        'temperature': temp_series
+        'temperature': temp_series,
+        'date': pd.Series(str(date_show)[:-3], index=temp_series.index)
     }
 )
 
@@ -45,12 +46,7 @@ temp_min = stat_dict['min_total']
 temp_max = stat_dict['max_total']
 temp_series_norm = (temp_series - temp_min)/(temp_max - temp_min)
 
-cmap_name = st.sidebar.selectbox(
-    'Choose colormap',
-    options=plt.colormaps(),
-    index=plt.colormaps().index('jet')
-)
-cmap = cm.get_cmap(cmap_name)
+cmap = cm.get_cmap('coolwarm')
 
 for city, temp in temp_series_norm.iteritems():
     k = matplotlib.colors.colorConverter.to_rgb(cmap(temp))
@@ -75,7 +71,7 @@ st.pydeck_chart(
             zoom=4,
             pitch=50
         ),
-        tooltip={'text': '{city}: {temperature}\n{city} All-time low: {all_time_low}\n{city} All-time high: {all_time_high}'},
+        tooltip={'text': '{city} {date}: {temperature}\nAll-time low: {all_time_low}\nAll-time high: {all_time_high}'},
         layers = [
             pdk.Layer(
                 "ScatterplotLayer",

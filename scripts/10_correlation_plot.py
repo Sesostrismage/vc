@@ -12,7 +12,7 @@ import vc.visuals.streamlit_tools as stt
 ####################################################################
 
 # Standard Streamlit settings.
-st.set_page_config(layout='wide')
+stt.settings()
 # Title becomes the file name for easy reference to the presentation.
 st.title(os.path.basename(__file__))
 # Object with city temp data.
@@ -26,7 +26,15 @@ corr_df = df.corr()
 # User input and calculations.
 ####################################################################
 
-colorscale = stt.cmap_plotly()
+builtin_colorscale_bool = st.sidebar.checkbox(
+    'Built-in colorscale?',
+    value=True
+)
+
+if builtin_colorscale_bool:
+    colorscale = stt.cmap_plotly()
+else:
+    colorscale = [[0, 'rgb(255, 255, 0)'], [0.5, 'rgb(128, 128, 128)'], [1, 'rgb(0, 255, 255)']]
 
 fixed_color_range_bool = st.sidebar.checkbox(
     'Fixed color range?'

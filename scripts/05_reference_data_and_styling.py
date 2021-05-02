@@ -14,6 +14,8 @@ from vc.visuals.colors import get_color, map_color_sequence
 
 # Standard Streamlit settings.
 st.set_page_config(layout='wide')
+# Title becomes the file name for easy reference to the presentation.
+st.title(os.path.basename(__file__))
 # Folder path with root of vc dirextory automatically detected.
 folder_path = os.path.join(ROOT_DIR, 'datasets', 'temp_brazil_cities', 'raw_data')
 # File name list from reading the folder contents.

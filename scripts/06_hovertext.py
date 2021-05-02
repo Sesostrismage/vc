@@ -14,6 +14,8 @@ from vc.visuals.colors import get_color, map_color_sequence
 
 # Standard Streamlit settings.
 st.set_page_config(layout='wide')
+# Title becomes the file name for easy reference to the presentation.
+st.title(os.path.basename(__file__))
 # Folder path with root of vc dirextory automatically detected.
 folder_path = os.path.join(ROOT_DIR, 'datasets', 'temp_brazil_cities', 'raw_data')
 # File name list from reading the folder contents.
@@ -76,39 +78,23 @@ year = st.sidebar.selectbox(
     index=len(year_list)-1
 )
 
-# Choose how to display reference data.
-ref_option = st.sidebar.selectbox(
-    'Choose reference display',
-    options=['None', 'Mean line', 'Min-mean-max lines', 'Min-mean-max shapes']
+#Choose hovermode.
+hovermode = st.sidebar.selectbox(
+    'Choose hovermode',
+    options=['x', 'closest']
 )
 
-# If reference lines are shown, you can choose to have them less obtrusive.
-if ref_option in ['Mean line', 'Min-mean-max lines']:
-    background_bool = st.sidebar.checkbox(
-        'Background styling?',
-        value=False
-    )
-else:
-    background_bool = False
-
-# This sets the opacity of the reference lines.
-if background_bool:
-    opacity = 0.25
-else:
-    opacity = 1
-
 # Calculate statistical values.
-if ref_option in ['Mean line', 'Min-mean-max lines', 'Min-mean-max shapes']:
-    stat_df = pd.DataFrame()
+stat_df = pd.DataFrame()
 
-    for city_name in city_dict:
-        if year in city_dict[city_name].index:
-            #Build stat df.
-            stat_df = pd.concat([stat_df, pd.DataFrame({city_name: city_dict[city_name].loc[year]})], axis=1)
+for city_name in city_dict:
+    if year in city_dict[city_name].index:
+        #Build stat df.
+        stat_df = pd.concat([stat_df, pd.DataFrame({city_name: city_dict[city_name].loc[year]})], axis=1)
 
-    mean_series = stat_df.mean(axis=1)
-    min_series = stat_df.min(axis=1)
-    max_series = stat_df.max(axis=1)
+mean_series = stat_df.mean(axis=1)
+min_series = stat_df.min(axis=1)
+max_series = stat_df.max(axis=1)
 
 
 ####################################################################
@@ -118,97 +104,42 @@ if ref_option in ['Mean line', 'Min-mean-max lines', 'Min-mean-max shapes']:
 # Create figure.
 fig = go.Figure()
 
-# Case when reference lines are chosen.
-if ref_option in ['Mean line', 'Min-mean-max lines']:
-    # Create hovertext.
-    text_list = [
-            f"{idx.title()} {year}<br>" +
-            f"{round(item, 2)} deg C mean"
-            for idx, item in mean_series.iteritems()
-        ]
+# Handle missing data.
+# Find indices where the series doesn't have null values.
+valid_idx = min_series.notnull()
+# Use those indices to put together x and y value lists.
+x_part = [col for idx, col in enumerate(df_crop.columns) if valid_idx[idx]]
+x = x_part + list(reversed(x_part))
 
-    # Print reference lines first so they go behind.
-    fig.add_trace(go.Scattergl(
-        x=mean_series.index,
-        y=mean_series,
-        hoverinfo='text',
-        hovertext=text_list,
-        name='All-city mean',
-        line={'color': get_color('temperature', 'mean')},
-        opacity=opacity
-    ))
-    # If min and max lines are also chose, plot them.
-    if ref_option in ['Min-mean-max lines']:
-        # Create hovertext.
-        text_list = [
-            f"{idx.title()} {year}<br>" +
-            f"{item} deg C minimum in {stat_df.loc[idx].idxmin()}"
-            for idx, item in min_series.iteritems()
-        ]
+y_mean_part = [val for idx, val in enumerate(mean_series) if valid_idx[idx]]
+y_part = [val for idx, val in enumerate(min_series) if valid_idx[idx]]
+y_min = y_part + list(reversed(y_mean_part))
+y_part = [val for idx, val in enumerate(max_series) if valid_idx[idx]]
+y_max = y_part + list(reversed(y_mean_part))
 
-        fig.add_trace(go.Scattergl(
-            x=min_series.index,
-            y=min_series,
-            hoverinfo='text',
-            hovertext=text_list,
-            name='All-city min',
-            line={'color': get_color('temperature', 'min')},
-            opacity=opacity
-        ))
-
-        text_list = [
-            f"{idx.title()} {year}<br>" +
-            f"{item} deg C maximum in {stat_df.loc[idx].idxmax()}"
-            for idx, item in max_series.iteritems()
-        ]
-        fig.add_trace(go.Scattergl(
-            x=max_series.index,
-            y=max_series,
-            hoverinfo='text',
-            hovertext=text_list,
-            name='All-city max',
-            line={'color': get_color('temperature', 'max')},
-            opacity=opacity
-        ))
-
-# Case when reference shapes are chosen.
-elif ref_option == 'Min-mean-max shapes':
-    # Handle missing data.
-    # Find indices where the series doesn't have null values.
-    valid_idx = min_series.notnull()
-    # Use those indices to put together x and y value lists.
-    x_part = [col for idx, col in enumerate(df_crop.columns) if valid_idx[idx]]
-    x = x_part + list(reversed(x_part))
-
-    y_mean_part = [val for idx, val in enumerate(mean_series) if valid_idx[idx]]
-    y_part = [val for idx, val in enumerate(min_series) if valid_idx[idx]]
-    y_min = y_part + list(reversed(y_mean_part))
-    y_part = [val for idx, val in enumerate(max_series) if valid_idx[idx]]
-    y_max = y_part + list(reversed(y_mean_part))
-
-    # Plot the min and max areas as filled polygons.
-    fig.add_trace(
-        go.Scatter(
-            x=x,
-            y=y_min,
-            fill='toself',
-            mode='none',
-            marker={'color': get_color('temperature', 'min')},
-            showlegend=False,
-            hoverinfo='none'
-        )
+# Plot the min and max areas as filled polygons.
+fig.add_trace(
+    go.Scatter(
+        x=x,
+        y=y_min,
+        fill='toself',
+        mode='none',
+        marker={'color': get_color('temperature', 'min')},
+        showlegend=False,
+        hoverinfo='none'
     )
-    fig.add_trace(
-        go.Scatter(
-            x=x,
-            y=y_max,
-            fill='toself',
-            mode='none',
-            marker={'color': get_color('temperature', 'max')},
-            showlegend=False,
-            hoverinfo='none'
-        )
+)
+fig.add_trace(
+    go.Scatter(
+        x=x,
+        y=y_max,
+        fill='toself',
+        mode='none',
+        marker={'color': get_color('temperature', 'max')},
+        showlegend=False,
+        hoverinfo='none'
     )
+)
 
 # Print all selected cities.
 for city_name in (city for city in city_dict if city in selected_cities_list):
@@ -235,7 +166,7 @@ fig.update_xaxes(title='Datetime')
 fig.update_yaxes(title='Temperature [deg C]')
 fig.update_layout(
     title=f"Temperature for brazilian cities in {year}",
-    hovermode='x',
+    hovermode=hovermode,
     height=600,
     width=1100
 )

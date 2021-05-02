@@ -12,7 +12,7 @@ import vc.visuals.streamlit_tools as stt
 ####################################################################
 
 # Standard Streamlit settings.
-st.set_page_config(layout='wide')
+stt.settings()
 # Title becomes the file name for easy reference to the presentation.
 st.title(os.path.basename(__file__))
 # Object with city temp data.
@@ -25,7 +25,7 @@ df, stat_dict = city_data.get_data()
 # Plotting.
 ####################################################################
 
-fig = pt_figure.heatmap_fig()
+fig = pt_figure.heatmap()
 fig.add_trace(
     go.Heatmap(
         x=df.columns,

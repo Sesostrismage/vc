@@ -48,14 +48,26 @@ def heatmap() -> go.Figure:
 
     return fig
 
-def phase_space(outlier_series: pd.Series) -> go.Figure:
+def phase_space(stat_dict: dict, outlier_series: pd.Series=None) -> go.Figure:
+    if outlier_series is None:
+        title=f"Temperature phase-space plot for brazilian cities"
+    else:
+        title=f"Temperature phase-space plot for brazilian cities with {len(outlier_series)} outliers"
+
     fig = go.Figure()
-    fig.update_xaxes(title={'text': 'Temperature [deg C]'})
-    fig.update_yaxes(title={'text': 'Temperature [deg C]'})
+    fig.update_xaxes(
+        title={'text': 'Temperature [deg C]'},
+        range=[stat_dict['min_total'], stat_dict['max_total']]
+    )
+    fig.update_yaxes(
+        title={'text': 'Temperature [deg C]'},
+        range=[stat_dict['min_total'], stat_dict['max_total']]
+    )
     fig.update_layout(
-        title=f"Temperature phase-space plot for brazilian cities with {len(outlier_series)} outliers",
+        title=title,
         height=height_standard,
-        width=width_standard
+        width=width_standard,
+        showlegend=True
     )
 
     return fig
