@@ -62,7 +62,7 @@ def summer_winter(fig: go.Figure, data: pd.Series, stat_dict: dict) -> go.Figure
                 if date.month in season_dict[s]:
                     season = s
                     start_date = date
-        elif date - prev_date > datetime.timedelta(weeks=53):
+        elif date - prev_date > datetime.timedelta(weeks=26):
             season_df = pd.concat([
                 season_df,
                 pd.DataFrame({
