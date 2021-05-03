@@ -235,7 +235,7 @@ elif ref_type == 'Summer-winter' and not month_bool:
                 if date.month in season_dict[s]:
                     season = s
                     start_date = date
-        elif date - prev_date > datetime.timedelta(weeks=53):
+        elif date - prev_date > datetime.timedelta(weeks=26):
             season_df = pd.concat([
                 season_df,
                 pd.DataFrame({
