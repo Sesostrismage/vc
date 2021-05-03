@@ -109,6 +109,15 @@ if show_mean_bool:
 
 # Create a Plotly figure.
 fig = go.Figure()
+# Layout.
+fig.update_xaxes(title='Datetime')
+fig.update_yaxes(title='Temperature [deg C]')
+fig.update_layout(
+    title='Temperature for brazilian cities in ' + str(year),
+    hovermode='x',
+    height=600,
+    width=1100
+)
 
 # Plot each chosen city if it has data.
 for file_name in (fname for fname in file_dict if fname in selected_files_list):
@@ -124,14 +133,5 @@ if show_mean_bool:
         x=mean_series.index, y=mean_series, name='All-city mean'
     ))
 
-# Layout.
-fig.update_xaxes(title='Datetime')
-fig.update_yaxes(title='Temperature [deg C]')
-fig.update_layout(
-    title='Temperature for brazilian cities in ' + str(year),
-    hovermode='x',
-    height=600,
-    width=1100
-)
 # Show the figure in the Streamlit app.
 st.plotly_chart(fig)

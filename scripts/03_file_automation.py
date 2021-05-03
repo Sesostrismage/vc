@@ -74,14 +74,14 @@ year = st.sidebar.selectbox(
     options=year_list,
     index=len(year_list)-1
 )
-# Choose whether or not to show the mean value in the plot.
+# Choose whether or not to show the mean value line.
 show_mean_bool = st.sidebar.checkbox(
     'Show mean value?'
 )
 # If yes, build the mean dataframe.
 if show_mean_bool:
     mean_df = pd.DataFrame()
-
+    # Loop through all cities.
     for file_name in city_dict:
         if year in city_dict[file_name].index:
             #Build mean df.
@@ -91,14 +91,26 @@ if show_mean_bool:
 
 
 ####################################################################
-# PLotting.
+# Plotting.
 ####################################################################
 
+# Create a Plotly figure.
 fig = go.Figure()
+# Layout.
+fig.update_xaxes(title='Datetime')
+fig.update_yaxes(title='Temperature [deg C]')
+fig.update_layout(
+    title=f"Temperature for brazilian cities in {year}",
+    hovermode='x',
+    height=600,
+    width=1100
+)
 
+# Plot each chosen city if it has data.
 for city_name in (city for city in city_dict if city in selected_cities_list):
     if year in city_dict[city_name].index:
         # Plot data from selected year if present.
+        # Name the trace after the city.
         fig.add_trace(go.Scattergl(
             x=city_dict[city_name].columns, y=city_dict[city_name].loc[year], name=city_name
         ))
@@ -109,14 +121,5 @@ if show_mean_bool:
         x=mean_series.index, y=mean_series, name='All-city mean'
     ))
 
-# Layout.
-fig.update_xaxes(title='Datetime')
-fig.update_yaxes(title='Temperature [deg C]')
-fig.update_layout(
-    title=f"Temperature for brazilian cities in {year}",
-    hovermode='x',
-    height=600,
-    width=1100
-)
 # Show the figure in the Streamlit app.
 st.plotly_chart(fig)

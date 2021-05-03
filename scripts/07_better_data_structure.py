@@ -29,6 +29,7 @@ month_dict = {
     5: 'May', 6: 'June', 7: 'July', 8: 'August',
     9: 'September', 10: 'October', 11: 'November', 12: 'December'
 }
+season_dict = {'Summer': [1, 2, 3, 12], 'Winter': [6, 7, 8, 9]}
 
 # Loop through all file names and load the data.
 for file_name in file_name_list:
@@ -156,6 +157,11 @@ fixed_yaxis_bool = st.sidebar.checkbox(
     value=False
 )
 
+ref_type = st.sidebar.selectbox(
+    'Reference data type',
+    options=['Min-max', 'Summer-winter']
+)
+
 
 ####################################################################
 # Show old and new data structures.
@@ -174,43 +180,119 @@ st.dataframe(df.style.highlight_null(null_color='grey'))
 # Create figure.
 fig = go.Figure()
 
-# Handle missing data.
-# Find indices where the series doesn't have null values.
-valid_idx = min_series.notnull()
-# Use those indices to put together x and y value lists.
-x_part = list(min_series[valid_idx].index)
-x = x_part + list(reversed(x_part))
+# Create min-max shapes if chosen.
+if ref_type == 'Min-max':
+    # Handle missing data.
+    # Find indices where the series doesn't have null values.
+    valid_idx = min_series.notnull()
+    # Use those indices to put together x and y value lists.
+    x_part = list(min_series[valid_idx].index)
+    x = x_part + list(reversed(x_part))
 
-y_mean_part = [val for idx, val in enumerate(mean_series) if valid_idx[idx]]
+    y_mean_part = [val for idx, val in enumerate(mean_series) if valid_idx[idx]]
 
-y_part = [val for idx, val in enumerate(min_series) if valid_idx[idx]]
-y_min = y_part + list(reversed(y_mean_part))
-y_part = [val for idx, val in enumerate(max_series) if valid_idx[idx]]
-y_max = y_part + list(reversed(y_mean_part))
+    y_part = [val for idx, val in enumerate(min_series) if valid_idx[idx]]
+    y_min = y_part + list(reversed(y_mean_part))
+    y_part = [val for idx, val in enumerate(max_series) if valid_idx[idx]]
+    y_max = y_part + list(reversed(y_mean_part))
 
-# Plot the min and max areas as filled polygons.
-fig.add_trace(
-    go.Scatter(
-        x=x,
-        y=y_min,
-        fill='toself',
-        mode='none',
-        marker={'color': get_color('temperature', 'min')},
-        showlegend=False,
-        hoverinfo='none'
+    # Plot the min and max areas as filled polygons.
+    fig.add_trace(
+        go.Scatter(
+            x=x,
+            y=y_min,
+            fill='toself',
+            mode='none',
+            marker={'color': get_color('temperature', 'min')},
+            showlegend=False,
+            hoverinfo='none'
+        )
     )
-)
-fig.add_trace(
-    go.Scatter(
-        x=x,
-        y=y_max,
-        fill='toself',
-        mode='none',
-        marker={'color': get_color('temperature', 'max')},
-        showlegend=False,
-        hoverinfo='none'
+    fig.add_trace(
+        go.Scatter(
+            x=x,
+            y=y_max,
+            fill='toself',
+            mode='none',
+            marker={'color': get_color('temperature', 'max')},
+            showlegend=False,
+            hoverinfo='none'
+        )
     )
-)
+# Else create summer-winter shapes if no particular month has been chosen.
+elif ref_type == 'Summer-winter' and not month_bool:
+    cdict = {'Summer': 'red', 'Winter': 'blue'}
+
+    season_df = pd.DataFrame(columns=['start', 'end', 'season'])
+
+    start_date = plot_df.index[0]
+    prev_date = plot_df.index[0]
+    season = None
+
+    for date in plot_df.index:
+        if season is None:
+            for s in season_dict:
+                if date.month in season_dict[s]:
+                    season = s
+                    start_date = date
+        elif date - prev_date > datetime.timedelta(weeks=53):
+            season_df = pd.concat([
+                season_df,
+                pd.DataFrame({
+                    'start': [start_date], 'end': [prev_date], 'season': [season]
+                })
+            ])
+            season = None
+        elif date.month not in season_dict[season]:
+            season_df = pd.concat([
+                season_df,
+                pd.DataFrame({
+                    'start': [start_date], 'end': [date], 'season': [season]
+                })
+            ])
+            season = None
+
+        prev_date = date
+
+    if season is not None:
+        season_df = pd.concat([season_df, pd.DataFrame({
+            'start': [start_date], 'end': [plot_df.index[-1]], 'season': [season]
+        })])
+
+    # Create season color boxes.
+    shape_list = []
+
+    # Create rectangles to indicate seasons.
+    if len(season_df) > 0:
+        for _, row in season_df.iterrows():
+            shape = go.layout.Shape(
+                type="rect",
+                x0=row['start'],
+                y0=min_series.min(),
+                x1=row['end'],
+                y1=max_series.max(),
+                line={'width':0},
+                fillcolor=cdict[row['season']],
+                opacity=0.25,
+                layer='below'
+            )
+
+            shape_list.append(shape)
+
+    fig.update_layout(shapes=shape_list)
+
+# Else set plotbackground colour to the season.
+elif ref_type == 'Summer-winter' and month_bool:
+    if month in season_dict['Summer']:
+        color = 'rgb(255, 196, 196)'
+    elif month in season_dict['Winter']:
+        color = 'rgb(196, 196, 255)'
+    else:
+        color = 'white'
+
+    fig.update_layout(
+        plot_bgcolor=color
+    )
 
 # Plot all selected cities.
 for city_name in plot_df.columns:
