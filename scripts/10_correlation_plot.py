@@ -17,29 +17,32 @@ stt.settings()
 st.title(os.path.basename(__file__))
 # Object with city temp data.
 city_data = CitiesTempData()
-
+# Get all data for the correlation calculation.
 df, stat_dict = city_data.get_data()
-
+# Calculate the correlation matrix.
 corr_df = df.corr()
+
 
 ####################################################################
 # User input and calculations.
 ####################################################################
 
+# Choose whether or not to use a built-in colorscale.
 builtin_colorscale_bool = st.sidebar.checkbox(
     'Built-in colorscale?',
     value=True
 )
-
+# If yes, dropdown with all Plotly colorscales.
 if builtin_colorscale_bool:
     colorscale = stt.cmap_plotly()
+# Else home-made colorscale with neutral middle colour.
 else:
     colorscale = [[0, 'rgb(255, 255, 0)'], [0.5, 'rgb(128, 128, 128)'], [1, 'rgb(0, 255, 255)']]
 
+# Choose whether to fix the color range from -1 to 1.
 fixed_color_range_bool = st.sidebar.checkbox(
     'Fixed color range?'
 )
-
 if fixed_color_range_bool:
     zmin = -1
     zmax = 1
@@ -52,6 +55,7 @@ else:
 # Plotting.
 ####################################################################
 
+# Plot the correlation matrix.
 fig = pt_figure.corr_map()
 fig.add_trace(
     go.Heatmap(
