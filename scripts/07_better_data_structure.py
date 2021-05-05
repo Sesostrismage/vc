@@ -156,7 +156,7 @@ fixed_yaxis_bool = st.sidebar.checkbox(
     'Fixed y-axis?',
     value=False
 )
-
+# The the type of reference shapes to use.
 ref_type = st.sidebar.selectbox(
     'Reference data type',
     options=['Min-max', 'Summer-winter']
@@ -170,7 +170,7 @@ ref_type = st.sidebar.selectbox(
 st.write('Old data structure (one city)')
 st.dataframe(city_dict['Belem'].style.highlight_null(null_color='grey'))
 
-st.write('New data structure')
+st.write('New data structure (all cities)')
 st.dataframe(df.style.highlight_null(null_color='grey'))
 
 ####################################################################
@@ -281,7 +281,7 @@ elif ref_type == 'Summer-winter' and not month_bool:
 
     fig.update_layout(shapes=shape_list)
 
-# Else set plotbackground colour to the season.
+# Else set plot background colour to the season.
 elif ref_type == 'Summer-winter' and month_bool:
     if month in season_dict['Summer']:
         color = 'rgb(255, 196, 196)'

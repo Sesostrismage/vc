@@ -47,65 +47,82 @@ def minmax_temp(fig: go.Figure, stat_dict: dict) -> go.Figure:
     return fig
 
 
-def summer_winter(fig: go.Figure, data: pd.Series, stat_dict: dict) -> go.Figure:
+def summer_winter(fig: go.Figure, data: pd.Series, stat_dict: dict, month: int=None) -> go.Figure:
     cdict = {'Summer': 'red', 'Winter': 'blue'}
     season_dict = {'Summer': [1, 2, 3, 12], 'Winter': [6, 7, 8, 9]}
-    season_df = pd.DataFrame(columns=['start', 'end', 'season'])
 
-    start_date = data.index[0]
-    prev_date = data.index[0]
-    season = None
+    # If no month is chosen, make shapes.
+    if month is None:
+        season_df = pd.DataFrame(columns=['start', 'end', 'season'])
 
-    for date in data.index:
-        if season is None:
-            for s in season_dict:
-                if date.month in season_dict[s]:
-                    season = s
-                    start_date = date
-        elif date - prev_date > datetime.timedelta(weeks=26):
-            season_df = pd.concat([
-                season_df,
-                pd.DataFrame({
-                    'start': [start_date], 'end': [prev_date], 'season': [season]
-                })
-            ])
-            season = None
-        elif date.month not in season_dict[season]:
-            season_df = pd.concat([
-                season_df,
-                pd.DataFrame({
-                    'start': [start_date], 'end': [date], 'season': [season]
-                })
-            ])
-            season = None
+        start_date = data.index[0]
+        prev_date = data.index[0]
+        season = None
 
-        prev_date = date
+        for date in data.index:
+            if season is None:
+                for s in season_dict:
+                    if date.month in season_dict[s]:
+                        season = s
+                        start_date = date
+            elif date - prev_date > datetime.timedelta(weeks=26):
+                season_df = pd.concat([
+                    season_df,
+                    pd.DataFrame({
+                        'start': [start_date], 'end': [prev_date], 'season': [season]
+                    })
+                ])
+                season = None
+            elif date.month not in season_dict[season]:
+                season_df = pd.concat([
+                    season_df,
+                    pd.DataFrame({
+                        'start': [start_date], 'end': [date], 'season': [season]
+                    })
+                ])
+                season = None
 
-    if season is not None:
-        season_df = pd.concat([season_df, pd.DataFrame({
-            'start': [start_date], 'end': [data.index[-1]], 'season': [season]
-        })])
+            prev_date = date
 
-    # Create season color boxes.
-    shape_list = []
+        if season is not None:
+            season_df = pd.concat([season_df, pd.DataFrame({
+                'start': [start_date], 'end': [data.index[-1]], 'season': [season]
+            })])
 
-    # Create rectangles to indicate seasons.
-    if len(season_df) > 0:
-        for _, row in season_df.iterrows():
-            shape = go.layout.Shape(
-                type="rect",
-                x0=row['start'],
-                y0=stat_dict['min_total'],
-                x1=row['end'],
-                y1=stat_dict['max_total'],
-                line={'width':0},
-                fillcolor=cdict[row['season']],
-                opacity=0.25,
-                layer='below'
-            )
+        # Create season color boxes.
+        shape_list = []
 
-            shape_list.append(shape)
+        # Create rectangles to indicate seasons.
+        if len(season_df) > 0:
+            for _, row in season_df.iterrows():
+                shape = go.layout.Shape(
+                    type="rect",
+                    x0=row['start'],
+                    y0=stat_dict['min_total'],
+                    x1=row['end'],
+                    y1=stat_dict['max_total'],
+                    line={'width':0},
+                    fillcolor=cdict[row['season']],
+                    opacity=0.25,
+                    layer='below'
+                )
 
-    fig.update_layout(shapes=shape_list)
+                shape_list.append(shape)
+
+        print(shape_list)
+        fig.update_layout(shapes=shape_list)
+
+    # Else set plot background colour to the season.
+    else:
+        if month in season_dict['Summer']:
+            color = 'rgb(255, 196, 196)'
+        elif month in season_dict['Winter']:
+            color = 'rgb(196, 196, 255)'
+        else:
+            color = 'white'
+
+        fig.update_layout(
+            plot_bgcolor=color
+        )
 
     return fig
