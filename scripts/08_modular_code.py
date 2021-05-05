@@ -12,7 +12,7 @@ import vc.visuals.streamlit_tools as stt
 ####################################################################
 
 # Standard Streamlit settings.
-st.set_page_config(layout='wide')
+stt.settings()
 # Title becomes the file name for easy reference to the presentation.
 st.title(os.path.basename(__file__))
 # Object with city temp data.
@@ -34,6 +34,11 @@ fixed_yaxis_bool = st.sidebar.checkbox(
     'Fixed y-axis?',
     value=False
 )
+# The the type of reference shapes to use.
+ref_type = st.sidebar.selectbox(
+    'Reference data type',
+    options=['Min-max', 'Summer-winter']
+)
 
 
 ####################################################################
@@ -42,8 +47,13 @@ fixed_yaxis_bool = st.sidebar.checkbox(
 
 # Create figure.
 fig = pt_figure.braz_cities_temp_per_year(month=month)
-# Add shapes for min and max temperatures.
-fig = pt_shapes.minmax_temp(fig, stat_dict)
+
+if ref_type == 'Min-max':
+    # Add shapes for min and max temperatures.
+    fig = pt_shapes.minmax_temp(fig, stat_dict)
+elif ref_type == 'Summer-winter':
+    # Add shapes or single background colours for season(s).
+    fig = pt_shapes.summer_winter(fig, plot_df, stat_dict, month=month)
 
 # Plot all selected cities.
 for city_name in plot_df.columns:

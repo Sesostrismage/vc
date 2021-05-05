@@ -2,10 +2,10 @@ import plotly.graph_objects as go
 import numpy as np
 import os
 import pandas as pd
+import plotly.express as px
 import streamlit as st
 
 from vc.definitions import ROOT_DIR
-from vc.visuals.colors import get_color, map_color_sequence
 
 
 ####################################################################
@@ -14,6 +14,8 @@ from vc.visuals.colors import get_color, map_color_sequence
 
 # Standard Streamlit settings.
 st.set_page_config(layout='wide')
+# Title becomes the file name for easy reference to the presentation.
+st.title(os.path.basename(__file__))
 # Folder path with root of vc dirextory automatically detected.
 folder_path = os.path.join(ROOT_DIR, 'datasets', 'temp_brazil_cities', 'raw_data')
 # File name list from reading the folder contents.
@@ -39,8 +41,13 @@ for file_name in file_name_list:
     # Insert dataframe into file dict.
     city_dict[city_name] = df_crop
 
-# Get fixed colormap.
-cmap = map_color_sequence(city_dict.keys())
+# Create a dictionary to hold consistent colours for each city.
+cdict = {}
+# Ensure that the cities are always sorted in the same order.
+sorted_list = sorted(city_dict.keys())
+# Assign colours to each city.
+for idx, item in enumerate(sorted_list):
+    cdict[item] = px.colors.qualitative.Alphabet[idx]
 
 
 ####################################################################
@@ -112,11 +119,20 @@ if ref_option in ['Mean line', 'Min-mean-max lines', 'Min-mean-max shapes']:
 
 
 ####################################################################
-# PLotting.
+# Plotting.
 ####################################################################
 
 # Create figure.
 fig = go.Figure()
+# Layout.
+fig.update_xaxes(title='Datetime')
+fig.update_yaxes(title='Temperature [deg C]')
+fig.update_layout(
+    title=f"Temperature for brazilian cities in {year}",
+    hovermode='x',
+    height=600,
+    width=1100
+)
 
 # Case when reference lines are chosen.
 if ref_option in ['Mean line', 'Min-mean-max lines']:
@@ -125,7 +141,7 @@ if ref_option in ['Mean line', 'Min-mean-max lines']:
         x=mean_series.index,
         y=mean_series,
         name='All-city mean',
-        line={'color': get_color('temperature', 'mean')},
+        line={'color': 'grey'},
         opacity=opacity
     ))
     # If min and max lines are also chose, plot them.
@@ -134,14 +150,14 @@ if ref_option in ['Mean line', 'Min-mean-max lines']:
             x=min_series.index,
             y=min_series,
             name='All-city min',
-            line={'color': get_color('temperature', 'min')},
+            line={'color': 'blue'},
             opacity=opacity
         ))
         fig.add_trace(go.Scattergl(
             x=max_series.index,
             y=max_series,
             name='All-city max',
-            line={'color': get_color('temperature', 'max')},
+            line={'color': 'red'},
             opacity=opacity
         ))
 
@@ -167,7 +183,7 @@ elif ref_option == 'Min-mean-max shapes':
             y=y_min,
             fill='toself',
             mode='none',
-            marker={'color': get_color('temperature', 'min')},
+            marker={'color': 'blue'},
             showlegend=False,
             hoverinfo='none'
         )
@@ -178,7 +194,7 @@ elif ref_option == 'Min-mean-max shapes':
             y=y_max,
             fill='toself',
             mode='none',
-            marker={'color': get_color('temperature', 'max')},
+            marker={'color': 'red'},
             showlegend=False,
             hoverinfo='none'
         )
@@ -191,18 +207,9 @@ for city_name in (city for city in city_dict if city in selected_cities_list):
         fig.add_trace(go.Scattergl(
             x=city_dict[city_name].columns,
             y=city_dict[city_name].loc[year],
-            line={'color': cmap[city_name]},
+            line={'color': cdict[city_name]},
             name=city_name
         ))
 
-# Set up the layout.
-fig.update_xaxes(title='Datetime')
-fig.update_yaxes(title='Temperature [deg C]')
-fig.update_layout(
-    title=f"Temperature for brazilian cities in {year}",
-    hovermode='x',
-    height=600,
-    width=1100
-)
 # Show the figure in the Streamlit app.
 st.plotly_chart(fig)
