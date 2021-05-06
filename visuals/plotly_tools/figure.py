@@ -1,12 +1,9 @@
-import pandas as pd
 import plotly.graph_objects as go
 
 from vc.data_treat.maps import month_dict
 
 height_standard = 600
 width_standard = 1100
-
-#TODO Set white background and remove ticklines.
 
 def braz_cities_temp_per_year(month: int=None) -> go.Figure:
     if month is not None:
@@ -40,25 +37,11 @@ def heatmap() -> go.Figure:
 
     return fig
 
-def phase_space(stat_dict: dict, outlier_series: pd.Series=None) -> go.Figure:
-    if outlier_series is None:
-        title=f"Temperature phase-space plot for brazilian cities"
-    else:
-        title=f"Temperature phase-space plot for brazilian cities with {len(outlier_series)} outliers"
-
+# Axis labels and title to reflect chosen cities.
+def phase_space(stat_dict: dict) -> go.Figure:
     fig = skeleton()
-    fig.update_xaxes(
-        title={'text': 'Temperature [deg C]'},
-        range=[stat_dict['min_total'], stat_dict['max_total']]
-    )
-    fig.update_yaxes(
-        title={'text': 'Temperature [deg C]'},
-        range=[stat_dict['min_total'], stat_dict['max_total']]
-    )
-    fig.update_layout(
-        title=title,
-        showlegend=True
-    )
+    fig.update_xaxes(range=[stat_dict['min_total'], stat_dict['max_total']])
+    fig.update_yaxes(range=[stat_dict['min_total'], stat_dict['max_total']])
 
     return fig
 
@@ -69,7 +52,15 @@ def skeleton() -> go.Figure:
         width=width_standard,
         plot_bgcolor='#ffffff'
     )
-    fig.update_xaxes(showgrid=False)
-    fig.update_yaxes(showgrid=False)
+    axis_dict = {
+        'ticks': 'outside',
+        'showline': True,
+        'linewidth': 2,
+        'linecolor': 'black',
+        'mirror': True,
+        'showgrid': False
+    }
+    fig.update_xaxes(axis_dict)
+    fig.update_yaxes(axis_dict)
 
     return fig
