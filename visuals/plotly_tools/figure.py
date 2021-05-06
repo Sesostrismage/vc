@@ -18,7 +18,6 @@ def braz_cities_temp_per_year(month: int=None) -> go.Figure:
         title=title,
         hovermode='x'
     )
-
     return fig
 
 def corr_map() -> go.Figure:
@@ -26,7 +25,6 @@ def corr_map() -> go.Figure:
     fig.update_xaxes(title={'text': 'City'})
     fig.update_yaxes(title={'text': 'City'})
     fig.update_layout(title=f"Correlation plot for brazilian cities")
-
     return fig
 
 def heatmap() -> go.Figure:
@@ -34,7 +32,6 @@ def heatmap() -> go.Figure:
     fig.update_xaxes(title={'text': 'City'})
     fig.update_yaxes(title={'text': 'Datetime'})
     fig.update_layout(title=f"Temperature heatmap for brazilian cities")
-
     return fig
 
 # Axis labels and title to reflect chosen cities.
@@ -42,7 +39,6 @@ def phase_space(stat_dict: dict) -> go.Figure:
     fig = skeleton()
     fig.update_xaxes(range=[stat_dict['min_total'], stat_dict['max_total']])
     fig.update_yaxes(range=[stat_dict['min_total'], stat_dict['max_total']])
-
     return fig
 
 def skeleton() -> go.Figure:
@@ -62,5 +58,4 @@ def skeleton() -> go.Figure:
     }
     fig.update_xaxes(axis_dict)
     fig.update_yaxes(axis_dict)
-
     return fig
