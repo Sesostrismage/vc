@@ -17,13 +17,12 @@ st.title(os.path.basename(__file__))
 # Object with city temp data.
 city_data = CitiesTempData()
 
-df, stat_dict = city_data.get_data()
-
 
 ####################################################################
 # User input and calculations.
 ####################################################################
 
+# Select cities for the x- and y-axes.
 city_x = st.sidebar.selectbox(
     'Select x-axis city',
     options=city_data.get_cities(selection_only=False),
@@ -36,15 +35,13 @@ city_y = st.sidebar.selectbox(
     index=1
 )
 
+# Select if the color is set by a city or outlier detection.
 color_option = st.sidebar.selectbox(
     'Color option',
     options=['City', 'Outlier detection']
 )
 
-df, stat_dict = city_data.get_data()
-series_x = df[city_x]
-series_y = df[city_y]
-
+# If city, choose city and get data.
 if color_option == 'City':
     city_color = st.sidebar.selectbox(
         'Select color city',
@@ -53,12 +50,19 @@ if color_option == 'City':
         index=2
     )
 
-    cropped_df = df[[city_x, city_y, city_color]].dropna(how='any')
-    series_x = cropped_df[city_x]
-    series_y = cropped_df[city_y]
-    series_color = cropped_df[city_color]
+    city_data.set_city_selection([city_x, city_y, city_color])
+    plot_df, stat_dict = city_data.get_data()
+    # Remove rows where data is missing from any of the cities.
+    plot_df.dropna(how='any', axis=0, inplace=True)
 
+# Else...
 elif color_option == 'Outlier detection':
+    city_data.set_city_selection([city_x, city_y])
+    plot_df, stat_dict = city_data.get_data()
+    # Remove rows where data is missing from any of the cities.
+    plot_df.dropna(how='any', axis=0, inplace=True)
+
+    # Set outlier tolerance via slider.
     outlier_tolerance = st.sidebar.slider(
         'Outlier tolerance',
         min_value=0.,
@@ -66,47 +70,48 @@ elif color_option == 'Outlier detection':
         step=0.01,
         value=1.
     )
-
-    outlier_idx = (
-        (series_y - series_x).abs()/series_x > outlier_tolerance
+    # Outlier calculation based on ratio of difference between x and y value.
+    outlier_bool = (
+        (plot_df[city_y] - plot_df[city_x]).abs()/plot_df[city_x] > outlier_tolerance
     )
+    # Make plot series for inliers and outliers.
+    inlier_x = plot_df.loc[~outlier_bool, city_x]
+    inlier_y = plot_df.loc[~outlier_bool, city_y]
+    outlier_x = plot_df.loc[outlier_bool, city_x]
+    outlier_y = plot_df.loc[outlier_bool, city_y]
 
-    inlier_x = series_x.loc[~outlier_idx]
-    inlier_y = series_y.loc[~outlier_idx]
-    outlier_x = series_x.loc[outlier_idx]
-    outlier_y = series_y.loc[outlier_idx]
 
 ####################################################################
 # Plotting.
 ####################################################################
 
-if color_option == 'City':
-    fig = pt_figure.phase_space(stat_dict)
+# Base figure is common to both options.
+fig = pt_figure.phase_space(stat_dict)
 
+if color_option == 'City':
     text_list = [
         f"{idx}<br>" +
-        f"{city_x}: {series_x.loc[idx]} deg C<br>" +
-        f"{city_y}: {series_y.loc[idx]} deg C<br>" +
-        f"{city_color}: {series_color.loc[idx]} deg C<br>"
-        for idx, _ in series_x.iteritems()
+        f"{city_x}: {plot_df.loc[idx, city_x]} deg C<br>" +
+        f"{city_y}: {plot_df.loc[idx, city_y]} deg C<br>" +
+        f"{city_color}: {plot_df.loc[idx, city_color]} deg C<br>"
+        for idx, _ in plot_df.iterrows()
     ]
 
     fig.add_trace(
         go.Scattergl(
-            x=series_x,
-            y=series_y,
+            x=plot_df[city_x],
+            y=plot_df[city_y],
             hoverinfo='text',
             hovertext=text_list,
             mode='markers',
-            marker={'color': series_color},
+            marker={'color': plot_df[city_color]},
             name='Temperatures'
         )
     )
-    fig.update_layout(showlegend=False)
+    fig.update_layout(title = {'text': f"{city_x} vs. {city_y} coloured by {city_color}"})
 
+# If outlier detection, plot inliers and outliers as separate traces with different colours.
 elif color_option == 'Outlier detection':
-    fig = pt_figure.phase_space(stat_dict, outlier_x)
-
     text_list = [
         f"{idx}<br>" +
         f"{city_x}: {inlier_x.loc[idx]} deg C<br>" +
@@ -148,5 +153,8 @@ elif color_option == 'Outlier detection':
             name='Outliers'
         )
     )
+    fig.update_layout(title = {'text': f"{city_x} vs. {city_y} with {len(outlier_x)} outliers out of {len(plot_df)} data points @{outlier_tolerance} tolerance"})
 
+fig.update_xaxes(title={'text': f"{city_x} temperature [deg C]"})
+fig.update_yaxes(title={'text': f"{city_y} temperature [deg C]"})
 st.plotly_chart(fig)

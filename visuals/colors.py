@@ -11,7 +11,7 @@ cdict = {
         'Add': '#00ff00',
         'Remove': 'red',
         'default': 'black',
-        'tagged': 'magenta'
+        'labeled': 'magenta'
     }
 }
 
