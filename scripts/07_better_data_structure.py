@@ -23,12 +23,13 @@ folder_path = os.path.join(ROOT_DIR, 'datasets', 'temp_brazil_cities', 'raw_data
 file_name_list = os.listdir(folder_path)
 # Empty dataframe to receive data.
 df = pd.DataFrame()
-
+# Dict of month numbers to month names.
 month_dict = {
     1: 'January', 2: 'February', 3: 'March', 4: 'April',
     5: 'May', 6: 'June', 7: 'July', 8: 'August',
     9: 'September', 10: 'October', 11: 'November', 12: 'December'
 }
+# Dict of which months belong to summer and winter.
 season_dict = {'Summer': [1, 2, 3, 12], 'Winter': [6, 7, 8, 9]}
 
 # Loop through all file names and load the data.
@@ -99,7 +100,9 @@ if len(city_idx) == 0:
     st.error('No cities are selected.')
     st.stop()
 
+# Keep only selected cities.
 city_slice_df = df[city_idx]
+# Create an index of all places where the data is null for all selected cities.
 na_idx = city_slice_df.isnull().all(axis=1)
 
 # Choose whether or not to only show a single month per year.
@@ -107,15 +110,17 @@ month_bool = st.sidebar.checkbox(
     'Filter by month?',
     value=False
 )
+# If filtering by month:
 if month_bool:
+    # Choose which month.
     month = st.sidebar.select_slider(
         'Choose month',
         options=range(1, 13),
         format_func=month_dict.get
     )
-
+    # Get a list of all usable years in the data.
     year_list = sorted(set([dt.year for dt in df.loc[~na_idx].index]))
-
+    # Choose start and end year.
     year_start = st.sidebar.slider(
         'Start year',
         min_value=year_list[0],
@@ -128,11 +133,14 @@ if month_bool:
         max_value=year_list[-1],
         value=year_list[-1]
     )
-
+    # Create an index of all dates fulfilling the requirements.
     dt_idx = [True if ((year_start <= dt.year <= year_end) and (dt.month == month)) else False for dt in df.index]
+    # Create the plot DataFrame.
     plot_df = df.loc[dt_idx & ~na_idx, city_idx]
 
+# If no month is chosen:
 else:
+    # Choose normal start and end date.
     date_start = st.sidebar.select_slider(
         'Start date',
         options=list(city_slice_df.index)
@@ -143,10 +151,11 @@ else:
         options=list(city_slice_df.loc[date_start:].index),
         value=list(city_slice_df.index)[-1]
     )
-
+    # Create date index and slice the data.
     dt_idx = (date_start <= df.index) & (df.index <= date_end)
     plot_df = df.loc[dt_idx & ~na_idx, city_idx]
 
+# Create statistical series.
 min_series = df.loc[dt_idx].min(axis=1)
 max_series = df.loc[dt_idx].max(axis=1)
 mean_series = df.loc[dt_idx].mean(axis=1)
@@ -179,6 +188,26 @@ st.dataframe(df.style.highlight_null(null_color='grey'))
 
 # Create figure.
 fig = go.Figure()
+# If month is chosen, add it to the plot title.
+if month_bool:
+    title = f"Temperature for brazilian cities in {month_dict[month]}"
+else:
+    title = f"Temperature for brazilian cities"
+
+# Layout.
+fig.update_xaxes(title='Datetime')
+fig.update_yaxes(title='Temperature [deg C]')
+fig.update_layout(
+    title=title,
+    hovermode='x',
+    height=600,
+    width=1100
+)
+
+# Set fixed y-axis range if chosen.
+if fixed_yaxis_bool:
+    fig.update_yaxes(range=[df.min().min(), df.max().max()])
+
 
 # Create min-max shapes if chosen.
 if ref_type == 'Min-max':
@@ -221,20 +250,26 @@ if ref_type == 'Min-max':
     )
 # Else create summer-winter shapes if no particular month has been chosen.
 elif ref_type == 'Summer-winter' and not month_bool:
+    # Color dict for plotting.
     cdict = {'Summer': 'red', 'Winter': 'blue'}
-
+    # Empty DataFrame to take info on season shapes.
     season_df = pd.DataFrame(columns=['start', 'end', 'season'])
 
+    # Prepare for loop.
     start_date = plot_df.index[0]
     prev_date = plot_df.index[0]
     season = None
 
+    # Loop through all dates.
     for date in plot_df.index:
+        # If season is None, check if current month is in either season.
         if season is None:
             for s in season_dict:
                 if date.month in season_dict[s]:
                     season = s
                     start_date = date
+        # If the date gap is too large due to missing data,
+        # end the season at the previous date.
         elif date - prev_date > datetime.timedelta(weeks=26):
             season_df = pd.concat([
                 season_df,
@@ -243,6 +278,7 @@ elif ref_type == 'Summer-winter' and not month_bool:
                 })
             ])
             season = None
+        # If the month is not in a season, end the season.
         elif date.month not in season_dict[season]:
             season_df = pd.concat([
                 season_df,
@@ -254,6 +290,7 @@ elif ref_type == 'Summer-winter' and not month_bool:
 
         prev_date = date
 
+    # Handling if the data ends in a season.
     if season is not None:
         season_df = pd.concat([season_df, pd.DataFrame({
             'start': [start_date], 'end': [plot_df.index[-1]], 'season': [season]
@@ -297,12 +334,14 @@ elif ref_type == 'Summer-winter' and month_bool:
 # Plot all selected cities.
 for city_name in plot_df.columns:
     if month_bool:
+        # If a month is chosen, add that month to the hovertext.
         text_list = [
             f"{city_name} - {month_dict[month]} {idx.year}<br>" +
             f"{row[city_name]} deg C"
             for idx, row in plot_df.iterrows()
         ]
     else:
+        # Else just city name, date and temperature.
         text_list = [
             f"{city_name} - {idx}<br>" +
             f"{row[city_name]} deg C"
@@ -318,23 +357,5 @@ for city_name in plot_df.columns:
         name=city_name
     ))
 
-if month_bool:
-    title = f"Temperature for brazilian cities in {month_dict[month]}"
-else:
-    title = f"Temperature for brazilian cities"
-
-# Set up the layout.
-fig.update_xaxes(title='Datetime')
-fig.update_yaxes(title='Temperature [deg C]')
-
-if fixed_yaxis_bool:
-    fig.update_yaxes(range=[df.min().min(), df.max().max()])
-
-fig.update_layout(
-    title=title,
-    hovermode='x',
-    height=600,
-    width=1100
-)
 # Show the figure in the Streamlit app.
 st.plotly_chart(fig)

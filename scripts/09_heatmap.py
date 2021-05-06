@@ -17,7 +17,7 @@ stt.settings()
 st.title(os.path.basename(__file__))
 # Object with city temp data.
 city_data = CitiesTempData()
-
+# Get all data for the heatmap plot.
 df, stat_dict = city_data.get_data()
 
 
@@ -25,6 +25,7 @@ df, stat_dict = city_data.get_data()
 # Plotting.
 ####################################################################
 
+# Plot the data in a heatmap.
 fig = pt_figure.heatmap()
 fig.add_trace(
     go.Heatmap(

@@ -103,6 +103,15 @@ max_series = stat_df.max(axis=1)
 
 # Create figure.
 fig = go.Figure()
+# Set up the layout.
+fig.update_xaxes(title='Datetime')
+fig.update_yaxes(title='Temperature [deg C]')
+fig.update_layout(
+    title=f"Temperature for brazilian cities in {year}",
+    hovermode=hovermode,
+    height=600,
+    width=1100
+)
 
 # Handle missing data.
 # Find indices where the series doesn't have null values.
@@ -161,14 +170,5 @@ for city_name in (city for city in city_dict if city in selected_cities_list):
             name=city_name
         ))
 
-# Set up the layout.
-fig.update_xaxes(title='Datetime')
-fig.update_yaxes(title='Temperature [deg C]')
-fig.update_layout(
-    title=f"Temperature for brazilian cities in {year}",
-    hovermode=hovermode,
-    height=600,
-    width=1100
-)
 # Show the figure in the Streamlit app.
 st.plotly_chart(fig)
