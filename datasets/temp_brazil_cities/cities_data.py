@@ -19,7 +19,7 @@ class CitiesTempData:
             if not city in self._df.columns:
                 raise KeyError(f"{city} is not in the data.")
 
-        self.city_selection = city_selection
+        self.city_selection = sorted(list(set(city_selection)))
 
     def get_datetimes(
         self,
