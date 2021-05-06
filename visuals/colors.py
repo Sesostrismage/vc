@@ -2,6 +2,10 @@ import plotly.express as px
 
 # Dict for all standard colours to be used in this module.
 cdict = {
+    'seasons': {
+        'Summer': 'red',
+        'Winter': 'blue'
+    },
     'temperature': {
         'value': 'black',
         'mean': '#999999',

@@ -6,7 +6,18 @@ def braz_cities_temp(
     plot_df: pd.DataFrame,
     city_name: str,
     month: int
-):
+) -> list:
+    """
+    Hovertext for standard time plot.
+
+    Args:
+        plot_df (pd.DataFrame): DataFrame with temperature data.
+        city_name (str): Name of the city to plot.
+        month (int): Month to plot, if any.
+
+    Returns:
+        text_list (list): Hovertext elements.
+    """
     if month is not None:
         text_list = [
             f"{city_name} - {maps.month_dict[month]} {idx.year}<br>" +
