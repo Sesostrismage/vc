@@ -116,8 +116,24 @@ fig.update_layout(
     title='Temperature for brazilian cities in ' + str(year),
     hovermode='x',
     height=600,
-    width=1100
+    width=1100,
+    plot_bgcolor='#ffffff'
 )
+# Dict to set better axis properties.
+axis_dict = {
+    # Move ticks outside the plot.
+    'ticks': 'outside',
+    # Show plot borders with these four settings.
+    'showline': True,
+    'linewidth': 2,
+    'linecolor': 'black',
+    'mirror': True,
+    # Remove gridlines in the plot.
+    'showgrid': False
+}
+# Apply to both axes.
+fig.update_xaxes(axis_dict)
+fig.update_yaxes(axis_dict)
 
 # Plot each chosen city if it has data.
 for file_name in (fname for fname in file_dict if fname in selected_files_list):
