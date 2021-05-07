@@ -17,7 +17,12 @@ This lets you use the normal import statements, where the repo is accessible by 
 
 Install the necessary packages to run the code in this repo using the requirements.txt in the root of the repo: [Instructions](https://note.nkmk.me/en/python-pip-install-requirements/)
 
-You can run the scripts via the command line, or...
+You can run the scripts via the command line:
+```
+streamlit run [path to file from root of the repo]
+bokeh serve --show [path to file from root of the repo]
+```
+, or...
 
 ## Setup VS Code (optional)
 My preferred development environment is [VS Code](https://code.visualstudio.com/) for ease of use, being able to do most tasks in one place, and high customizability.
