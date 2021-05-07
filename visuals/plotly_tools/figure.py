@@ -83,6 +83,7 @@ def skeleton() -> go.Figure:
         width=width_standard,
         plot_bgcolor='#ffffff'
     )
+    # Dict to set better axis properties.
     axis_dict = {
         # Move ticks outside the plot.
         'ticks': 'outside',
