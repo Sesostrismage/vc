@@ -1,6 +1,8 @@
 # Visualization Course (VC) repo
 Repository to illustrate tips and tricks for exploration and visualization of tabular data using Python. The link to the companion presentation [can be found here](https://docs.google.com/presentation/d/1qKf_4JmTFqb-OldIl1Fp1gvSKnPdeFfY531qPktCGRc/edit?usp=sharing).
 
+All the example scripts are in /scripts
+
 ## Setup Python
 Install Python 3, for example using [Anaconda](https://www.anaconda.com/products/individual).
 
