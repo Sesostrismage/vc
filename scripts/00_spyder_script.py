@@ -2,12 +2,15 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
+from vc.definitions import ROOT_DIR
+
 ####################################################################
 # Common variables.
 ####################################################################
 
+# Get the the root dir of the module.
 # Folder path to data files.
-folder_path = r"C:/Kode/vc/datasets/temp_brazil_cities/raw_data/"
+folder_path = ROOT_DIR + "/datasets/temp_brazil_cities/raw_data/"
 
 # Set the year you want to look at.
 year = 1977
