@@ -68,12 +68,12 @@ Set up multi-commands to run Streamlit and Bokeh scripts easily. This is done in
 In VS Code, run the command `Preferences: Open keyboard shortcuts (JSON)` and add the following:
 ```
 {
-    "key": "ctrl+shift+b",
-    "command": "multiCommand.bokehActiveFile"
+    "key": "ctrl+l",
+    "command": "multiCommand.streamlitActiveFile"
 },
 {
-    "key": "ctrl+t",
-    "command": "workbench.action.terminal.new"
-},
+    "key": "ctrl+shift+b",
+    "command": "multiCommand.bokehActiveFile"
+}
 ```
 Now you should be able to run Streamlit and Bokeh scripts with the shortcuts above.
