@@ -27,6 +27,8 @@ bokeh serve --show [path to file from root of the repo]
 ## Setup VS Code (optional)
 My preferred development environment is [VS Code](https://code.visualstudio.com/) for ease of use, being able to do most tasks in one place, and high customizability.
 
+Using Anaconda Navigator, install the `conda` package in the environment. This package seems to be needed to automatically activate the environment when opening a terminal window in VS Code.
+
 In the terminal window, press `Select default profile` to be Command Prompt. You still need to close the first terminal the automatically opens up, but when you then open a new terminal, it should automatically activate the chosen Python environment. I have no idea why it has to be like this, but it's the only setup I've found that works, even if it's clunky. Honestly, you might still need to fiddle around and look on StackOverflow to figure out how  to auto-active the Python environment. If someone knows a better way to set this up, please let me know. :-)
 
 Install the [Multi-command extension](https://marketplace.visualstudio.com/items?itemName=ryuta46.multi-command).
