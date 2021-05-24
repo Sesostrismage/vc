@@ -109,8 +109,8 @@ fig.update_yaxes(title='Temperature [deg C]')
 fig.update_layout(
     title=f"Temperature for brazilian cities in {year}",
     hovermode=hovermode,
-    height=600,
-    width=1100,
+    height=800,
+    width=1400,
     plot_bgcolor='#ffffff'
 )
 # Dict to set better axis properties.

@@ -3,8 +3,8 @@ import plotly.graph_objects as go
 from vc.data_treat.maps import month_dict
 
 # Standard width and height for figures, at the top for easy reference.
-height_standard = 600
-width_standard = 1100
+height_standard = 800
+width_standard = 1400
 
 def braz_cities_temp_per_year(month: int=None) -> go.Figure:
     """
