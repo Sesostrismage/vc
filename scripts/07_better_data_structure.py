@@ -315,15 +315,22 @@ elif ref_type == 'Summer-winter' and not month_bool:
     # Create season color boxes.
     shape_list = []
 
+    if fixed_yaxis_bool:
+        y_min = min_series.min()
+        y_max = max_series.max()
+    else:
+        y_min = plot_df.min().min()
+        y_max = plot_df.max().max()
+
     # Create rectangles to indicate seasons.
     if len(season_df) > 0:
         for _, row in season_df.iterrows():
             shape = go.layout.Shape(
                 type="rect",
                 x0=row['start'],
-                y0=min_series.min(),
+                y0=y_min,
                 x1=row['end'],
-                y1=max_series.max(),
+                y1=y_max,
                 line={'width':0},
                 fillcolor=cdict[row['season']],
                 opacity=0.25,
