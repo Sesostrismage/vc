@@ -31,7 +31,8 @@ fig.add_trace(
     go.Heatmap(
         x=df.columns,
         y=df.index,
-        z=df
+        z=df,
+        colorscale='Jet'
     )
 )
 st.plotly_chart(fig)
