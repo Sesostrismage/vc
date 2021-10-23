@@ -1,12 +1,12 @@
 import plotly.graph_objects as go
-
 from vc.data_treat.maps import month_dict
 
 # Standard width and height for figures, at the top for easy reference.
 height_standard = 800
 width_standard = 1400
 
-def braz_cities_temp_per_year(month: int=None) -> go.Figure:
+
+def braz_cities_temp_per_year(month: int = None) -> go.Figure:
     """
     Standard time plot of data.
 
@@ -22,13 +22,11 @@ def braz_cities_temp_per_year(month: int=None) -> go.Figure:
         title = f"Temperature for brazilian cities"
 
     fig = skeleton()
-    fig.update_xaxes(title={'text': 'Months'})
-    fig.update_yaxes(title={'text': 'Temperature [deg C]'})
-    fig.update_layout(
-        title=title,
-        hovermode='x'
-    )
+    fig.update_xaxes(title={"text": "Months"})
+    fig.update_yaxes(title={"text": "Temperature [deg C]"})
+    fig.update_layout(title=title, hovermode="x")
     return fig
+
 
 def corr_map() -> go.Figure:
     """
@@ -38,10 +36,11 @@ def corr_map() -> go.Figure:
         go.Figure: Plotly figure.
     """
     fig = skeleton()
-    fig.update_xaxes(title={'text': 'City'})
-    fig.update_yaxes(title={'text': 'City'})
+    fig.update_xaxes(title={"text": "City"})
+    fig.update_yaxes(title={"text": "City"})
     fig.update_layout(title=f"Correlation plot for brazilian cities")
     return fig
+
 
 def heatmap() -> go.Figure:
     """
@@ -51,10 +50,11 @@ def heatmap() -> go.Figure:
         go.Figure: Plotly figure.
     """
     fig = skeleton()
-    fig.update_xaxes(title={'text': 'City'})
-    fig.update_yaxes(title={'text': 'Datetime'})
+    fig.update_xaxes(title={"text": "City"})
+    fig.update_yaxes(title={"text": "Datetime"})
     fig.update_layout(title=f"Temperature heatmap for brazilian cities")
     return fig
+
 
 def phase_space(stat_dict: dict) -> go.Figure:
     """
@@ -64,9 +64,10 @@ def phase_space(stat_dict: dict) -> go.Figure:
         go.Figure: Plotly figure.
     """
     fig = skeleton()
-    fig.update_xaxes(range=[stat_dict['min_total'], stat_dict['max_total']])
-    fig.update_yaxes(range=[stat_dict['min_total'], stat_dict['max_total']])
+    fig.update_xaxes(range=[stat_dict["min_total"], stat_dict["max_total"]])
+    fig.update_yaxes(range=[stat_dict["min_total"], stat_dict["max_total"]])
     return fig
+
 
 def skeleton() -> go.Figure:
     """
@@ -79,21 +80,19 @@ def skeleton() -> go.Figure:
     fig = go.Figure()
     # Set standard width and height, and white background.
     fig.update_layout(
-        height=height_standard,
-        width=width_standard,
-        plot_bgcolor='#ffffff'
+        height=height_standard, width=width_standard, plot_bgcolor="#ffffff"
     )
     # Dict to set better axis properties.
     axis_dict = {
         # Move ticks outside the plot.
-        'ticks': 'outside',
+        "ticks": "outside",
         # Show plot borders with these four settings.
-        'showline': True,
-        'linewidth': 2,
-        'linecolor': 'black',
-        'mirror': True,
+        "showline": True,
+        "linewidth": 2,
+        "linecolor": "black",
+        "mirror": True,
         # Remove gridlines in the plot.
-        'showgrid': False
+        "showgrid": False,
     }
     # Apply to both axes.
     fig.update_xaxes(axis_dict)

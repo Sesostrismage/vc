@@ -1,11 +1,10 @@
 import os
+
 import plotly.graph_objects as go
 import streamlit as st
-
-from vc.datasets.temp_brazil_cities.cities_data import CitiesTempData
 import vc.visuals.plotly_tools.figure as pt_figure
 import vc.visuals.streamlit_tools as stt
-
+from vc.datasets.temp_brazil_cities.cities_data import CitiesTempData
 
 ####################################################################
 # Setup and data loading.
@@ -27,12 +26,5 @@ df, stat_dict = city_data.get_data()
 
 # Plot the data in a heatmap.
 fig = pt_figure.heatmap()
-fig.add_trace(
-    go.Heatmap(
-        x=df.columns,
-        y=df.index,
-        z=df,
-        colorscale='Jet'
-    )
-)
+fig.add_trace(go.Heatmap(x=df.columns, y=df.index, z=df, colorscale="Jet"))
 st.plotly_chart(fig)

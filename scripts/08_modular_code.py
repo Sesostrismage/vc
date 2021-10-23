@@ -2,7 +2,11 @@ import os
 import streamlit as st
 
 from vc.datasets.temp_brazil_cities.cities_data import CitiesTempData
-from vc.visuals.plotly_tools import figure as pt_figure, shapes as pt_shapes, trace as pt_trace
+from vc.visuals.plotly_tools import (
+    figure as pt_figure,
+    shapes as pt_shapes,
+    trace as pt_trace,
+)
 from vc.visuals.colors import map_color_sequence
 import vc.visuals.streamlit_tools as stt
 
@@ -30,14 +34,10 @@ stt.multiselect_cities(city_data)
 # Choose data ranges and get data.
 plot_df, stat_dict, month = stt.braz_cities_choose_data(city_data)
 # Choose whether or not to have a fixed y-axis.
-fixed_yaxis_bool = st.sidebar.checkbox(
-    'Fixed y-axis?',
-    value=False
-)
+fixed_yaxis_bool = st.sidebar.checkbox("Fixed y-axis?", value=False)
 # The the type of reference shapes to use.
 ref_type = st.sidebar.selectbox(
-    'Reference data type',
-    options=['Min-max', 'Summer-winter']
+    "Reference data type", options=["Min-max", "Summer-winter"]
 )
 
 
@@ -48,10 +48,10 @@ ref_type = st.sidebar.selectbox(
 # Create figure.
 fig = pt_figure.braz_cities_temp_per_year(month=month)
 
-if ref_type == 'Min-max':
+if ref_type == "Min-max":
     # Add shapes for min and max temperatures.
     fig = pt_shapes.minmax_temp(fig, stat_dict)
-elif ref_type == 'Summer-winter':
+elif ref_type == "Summer-winter":
     # Add shapes or single background colours for season(s).
     fig = pt_shapes.summer_winter(fig, plot_df, stat_dict, month=month)
 
@@ -61,7 +61,7 @@ for city_name in plot_df.columns:
 
 # Apply fixed y-axis if requested.
 if fixed_yaxis_bool:
-    fig.update_yaxes(range=[stat_dict['min_total'], stat_dict['max_total']])
+    fig.update_yaxes(range=[stat_dict["min_total"], stat_dict["max_total"]])
 
 # Show the figure in the Streamlit app.
 st.plotly_chart(fig)

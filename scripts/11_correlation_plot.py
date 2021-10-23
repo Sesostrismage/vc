@@ -1,11 +1,10 @@
 import os
+
 import plotly.graph_objects as go
 import streamlit as st
-
-from vc.datasets.temp_brazil_cities.cities_data import CitiesTempData
 import vc.visuals.plotly_tools.figure as pt_figure
 import vc.visuals.streamlit_tools as stt
-
+from vc.datasets.temp_brazil_cities.cities_data import CitiesTempData
 
 ####################################################################
 # Setup and data loading.
@@ -28,21 +27,20 @@ corr_df = df.corr()
 ####################################################################
 
 # Choose whether or not to use a built-in colorscale.
-builtin_colorscale_bool = st.sidebar.checkbox(
-    'Built-in colorscale?',
-    value=True
-)
+builtin_colorscale_bool = st.sidebar.checkbox("Built-in colorscale?", value=True)
 # If yes, dropdown with all Plotly colorscales.
 if builtin_colorscale_bool:
     colorscale = stt.cmap_plotly()
 # Else home-made colorscale with neutral middle colour.
 else:
-    colorscale = [[0, 'rgb(255, 255, 0)'], [0.5, 'rgb(128, 128, 128)'], [1, 'rgb(0, 255, 255)']]
+    colorscale = [
+        [0, "rgb(255, 255, 0)"],
+        [0.5, "rgb(128, 128, 128)"],
+        [1, "rgb(0, 255, 255)"],
+    ]
 
 # Choose whether to fix the color range from -1 to 1.
-fixed_color_range_bool = st.sidebar.checkbox(
-    'Fixed color range?'
-)
+fixed_color_range_bool = st.sidebar.checkbox("Fixed color range?")
 if fixed_color_range_bool:
     zmin = -1
     zmax = 1
@@ -64,7 +62,7 @@ fig.add_trace(
         z=corr_df,
         colorscale=colorscale,
         zmin=zmin,
-        zmax=zmax
+        zmax=zmax,
     )
 )
 st.plotly_chart(fig)
