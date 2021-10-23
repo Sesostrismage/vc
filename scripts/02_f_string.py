@@ -1,13 +1,23 @@
 w_bird = 5
 w_fruit = 1
-fruit = 'coconut'
+fruit = "coconut"
 
 # String addition: Clunky, manual declaration of variables to strings:
-str_add = "A " + str(w_bird) + " ounce bird could not carry a " + str(w_fruit) + " pound " + fruit + "."
+str_add = (
+    "A "
+    + str(w_bird)
+    + " ounce bird could not carry a "
+    + str(w_fruit)
+    + " pound "
+    + fruit
+    + "."
+)
 print(str_add)
 
 # String formatting: Automatic typing to str, but inputs at the end:
-str_format = "A {} ounce bird could not carry a {} pound {}.".format(w_bird, w_fruit, fruit)
+str_format = "A {} ounce bird could not carry a {} pound {}.".format(
+    w_bird, w_fruit, fruit
+)
 print(str_format)
 
 # f-string: Awesomeness.

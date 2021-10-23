@@ -3,14 +3,11 @@ import json
 import os
 
 from dateutil.parser import parse
-
 from vc.definitions import ROOT_DIR
 
-class CityDataLabeler():
-    def __init__(
-        self,
-        city_name: str
-    ) -> None:
+
+class CityDataLabeler:
+    def __init__(self, city_name: str) -> None:
         """
         Object handle labeling of Brazilian cities temperature data.
 
@@ -19,9 +16,9 @@ class CityDataLabeler():
         """
         self.city_name = city_name
         # Generate paths to cities data.
-        self.folder_path = os.path.join(ROOT_DIR, 'datasets', 'temp_brazil_cities')
+        self.folder_path = os.path.join(ROOT_DIR, "datasets", "temp_brazil_cities")
         # Generate path to labels file.
-        self.file_path = os.path.join(self.folder_path, 'labels.json')
+        self.file_path = os.path.join(self.folder_path, "labels.json")
 
         # Load the full label set.
         f = open(self.file_path)
@@ -32,12 +29,12 @@ class CityDataLabeler():
         if self.city_name not in self.full_tag_dict:
             self.dt_list = []
         else:
-            self.dt_list = [parse(dt).date() for dt in self.full_tag_dict[self.city_name]]
+            self.dt_list = [
+                parse(dt).date() for dt in self.full_tag_dict[self.city_name]
+            ]
 
     def get_datetimes(
-        self,
-        date_start: datetime.date=None,
-        date_end: datetime.date=None
+        self, date_start: datetime.date = None, date_end: datetime.date = None
     ) -> list:
         """
         Get all labeled dates, optionally within user-set bounds.
@@ -52,7 +49,9 @@ class CityDataLabeler():
         if date_start is None or date_end is None:
             dt_in_period_list = self.dt_list
         else:
-            dt_in_period_list = [dt for dt in self.dt_list if date_start <= dt <= date_end]
+            dt_in_period_list = [
+                dt for dt in self.dt_list if date_start <= dt <= date_end
+            ]
 
         return dt_in_period_list
 
@@ -84,9 +83,7 @@ class CityDataLabeler():
         """
         # Makes the exising labels and the labels to remove into sets,
         # Subtract one from the other and turn the result back into a list.
-        self.dt_list = sorted(list(
-            set(self.dt_list) - set(remove_dt_list)
-        ))
+        self.dt_list = sorted(list(set(self.dt_list) - set(remove_dt_list)))
         self.save()
 
     def save(self) -> None:
@@ -99,5 +96,5 @@ class CityDataLabeler():
         # Insert the city's labels into the dict.
         self.full_tag_dict[self.city_name] = dt_str_list
         # Save to file.
-        with open(self.file_path, 'w') as f:
+        with open(self.file_path, "w") as f:
             json.dump(self.full_tag_dict, f, indent=4, sort_keys=True)
