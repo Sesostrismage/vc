@@ -1,5 +1,5 @@
 import datetime
-import os
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -15,11 +15,11 @@ from vc.visuals.colors import get_color, map_color_sequence
 # Standard Streamlit settings.
 st.set_page_config(layout="wide")
 # Title becomes the file name for easy reference to the presentation.
-st.title(os.path.basename(__file__))
+st.title(Path(__file__).name)
 # Folder path with root of vc dirextory automatically detected.
-folder_path = os.path.join(ROOT_DIR, "datasets", "temp_brazil_cities", "raw_data")
+folder_path = ROOT_DIR / "datasets" / "temp_brazil_cities" / "raw_data"
 # File name list from reading the folder contents.
-file_name_list = os.listdir(folder_path)
+file_name_list = list(folder_path.iterdir())
 # Empty dataframe to receive data.
 df = pd.DataFrame()
 # Dict of month numbers to month names.
@@ -43,10 +43,10 @@ season_dict = {"Summer": [1, 2, 3, 12], "Winter": [6, 7, 8, 9]}
 # Loop through all file names and load the data.
 for file_name in file_name_list:
     # Generate city name from file name.
-    city_name = file_name[8:-4].replace("_", " ").title()
+    city_name = file_name.name[8:-4].replace("_", " ").title()
 
     # Load data into Pandas DataFrame with first row as column names and first column as index names.
-    city_df = pd.read_csv(os.path.join(folder_path, file_name), header=0, index_col=0)
+    city_df = pd.read_csv(folder_path / file_name, header=0, index_col=0)
     # Remove pre-generated average columns.
     city_df = city_df.drop(["D-J-F", "M-A-M", "J-J-A", "S-O-N", "metANN"], axis=1)
     # Set erroneous values to NaN so they don't disturb the results.
@@ -73,10 +73,10 @@ city_dict = {}
 # Loop through all file names and load the data.
 for file_name in file_name_list:
     # Generate city name from file name.
-    city_name = file_name[8:-4].replace("_", " ").title()
+    city_name = file_name.name[8:-4].replace("_", " ").title()
 
     # Load data into Pandas DataFrame with first row as column names and first column as index names.
-    temp_df = pd.read_csv(os.path.join(folder_path, file_name), header=0, index_col=0)
+    temp_df = pd.read_csv(folder_path / file_name, header=0, index_col=0)
     # Remove pre-generated average columns.
     df_crop = temp_df.drop(["D-J-F", "M-A-M", "J-J-A", "S-O-N", "metANN"], axis=1)
     # Set erroneous values to NaN so they don't disturb the results.

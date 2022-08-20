@@ -1,4 +1,4 @@
-import os
+from pathlib import Path
 
 import plotly.graph_objects as go
 import streamlit as st
@@ -17,7 +17,7 @@ from vc.visuals.plotly_tools import hovertext as pt_hover
 # Standard Streamlit settings.
 stt.settings()
 # Title becomes the file name for easy reference to the presentation.
-st.title(os.path.basename(__file__))
+st.title(Path(__file__).name)
 # Object with city temp data.
 city_data = CitiesTempData()
 # Get fixed colormap for the cities.

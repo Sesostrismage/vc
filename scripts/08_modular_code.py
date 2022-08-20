@@ -1,4 +1,4 @@
-import os
+from pathlib import Path
 import streamlit as st
 
 from vc.datasets.temp_brazil_cities.cities_data import CitiesTempData
@@ -18,7 +18,7 @@ import vc.visuals.streamlit_tools as stt
 # Standard Streamlit settings.
 stt.settings()
 # Title becomes the file name for easy reference to the presentation.
-st.title(os.path.basename(__file__))
+st.title(Path(__file__).name)
 # Object with city temp data.
 city_data = CitiesTempData()
 # Get fixed colormap for the cities.
