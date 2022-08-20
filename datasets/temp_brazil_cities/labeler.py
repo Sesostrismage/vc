@@ -1,6 +1,5 @@
 import datetime
 import json
-import os
 
 from dateutil.parser import parse
 from vc.definitions import ROOT_DIR
@@ -16,14 +15,13 @@ class CityDataLabeler:
         """
         self.city_name = city_name
         # Generate paths to cities data.
-        self.folder_path = os.path.join(ROOT_DIR, "datasets", "temp_brazil_cities")
+        self.folder_path = ROOT_DIR / "datasets" / "temp_brazil_cities"
         # Generate path to labels file.
-        self.file_path = os.path.join(self.folder_path, "labels.json")
+        self.file_path = self.folder_path / "labels.json"
 
         # Load the full label set.
-        f = open(self.file_path)
-        self.full_tag_dict = json.load(f)
-        f.close()
+        with open(self.file_path) as f:
+            self.full_tag_dict = json.load(f)
 
         # Get any existing labels for the city.
         if self.city_name not in self.full_tag_dict:

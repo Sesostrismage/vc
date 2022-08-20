@@ -1,5 +1,4 @@
 import datetime
-import os
 
 import numpy as np
 import pandas as pd
@@ -9,7 +8,7 @@ from vc.definitions import ROOT_DIR
 # This function loads files from the Brazilian cities temperature dataset.
 def braz_cities_temp(mode: str = "agg"):
     # Gets the folder path relative to the root dir of the module.
-    folder_path = os.path.join(ROOT_DIR, "datasets", "temp_brazil_cities", "raw_data")
+    folder_path = ROOT_DIR / "datasets" / "temp_brazil_cities" / "raw_data"
 
     # Function to perform the actual loading of each city's data.
     def load_file(file_path: str) -> pd.DataFrame:
@@ -24,11 +23,11 @@ def braz_cities_temp(mode: str = "agg"):
 
     # Function to extract the city name from the file name.
     def fname_to_city_name(file_name: str) -> str:
-        city_name = file_name[8:-4].replace("_", " ").title()
+        city_name = file_name.name[8:-4].replace("_", " ").title()
         return city_name
 
-    # Get a lidt of all files in the folder.
-    file_name_list = os.listdir(folder_path)
+    # Get a list of all files in the folder.
+    file_name_list = list(folder_path.iterdir())
 
     # If mode == 'dict', load the data from each file as-is into a dict key.
     if mode == "dict":
@@ -36,7 +35,7 @@ def braz_cities_temp(mode: str = "agg"):
 
         for file_name in file_name_list:
             city_name = fname_to_city_name(file_name)
-            file_dict[city_name] = load_file(os.path.join(folder_path, file_name))
+            file_dict[city_name] = load_file(folder_path / file_name)
 
         return file_dict
 
@@ -47,7 +46,7 @@ def braz_cities_temp(mode: str = "agg"):
         # Loop through all file names.
         for file_name in file_name_list:
             # Load data into Pandas DataFrame with first row as column names and first column as index names.
-            city_df = load_file(os.path.join(folder_path, file_name))
+            city_df = load_file(folder_path / file_name)
             # Change columns from month names to month numbers.
             city_df.columns = [idx + 1 for idx, _ in enumerate(city_df.columns)]
             # Stack the data columns.

@@ -1,4 +1,4 @@
-import os
+from pathlib import Path
 
 import plotly.graph_objects as go
 import streamlit as st
@@ -12,7 +12,7 @@ from vc.datasets.temp_brazil_cities.cities_data import CitiesTempData
 # Standard Streamlit settings.
 st.set_page_config(layout="wide")
 # Title becomes the file name for easy reference to the presentation.
-st.title(os.path.basename(__file__))
+st.title(Path(__file__).name)
 # Object with city temp data.
 city_data = CitiesTempData()
 

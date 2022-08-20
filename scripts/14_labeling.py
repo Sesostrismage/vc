@@ -1,5 +1,4 @@
-import os
-
+from pathlib import Path
 import pandas as pd
 from bokeh.io import curdoc
 from bokeh.layouts import column, row
@@ -246,8 +245,12 @@ update_labels_button.on_click(update_labels_handler)
 # Create the layout of the page.
 curdoc().add_root(
     row(
-        column(city_name_dropdown, select_mode_dropdown, update_labels_button,),
+        column(
+            city_name_dropdown,
+            select_mode_dropdown,
+            update_labels_button,
+        ),
         column(fig),
     )
 )
-curdoc().title = os.path.basename(__file__)
+curdoc().title = Path(__file__).name
