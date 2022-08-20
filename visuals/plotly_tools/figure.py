@@ -1,5 +1,5 @@
 import plotly.graph_objects as go
-from vc.data_treat.maps import month_dict
+from vc.data_treat.maps import Month
 
 # Standard width and height for figures, at the top for easy reference.
 height_standard = 800
@@ -17,7 +17,7 @@ def braz_cities_temp_per_year(month: int = None) -> go.Figure:
         go.Figure: Plotly figure.
     """
     if month is not None:
-        title = f"Temperature for brazilian cities in {month_dict[month]}"
+        title = f"Temperature for brazilian cities in {Month(month).name}"
     else:
         title = f"Temperature for brazilian cities"
 
