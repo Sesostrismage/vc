@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import plotly.colors
 import streamlit as st
 from matplotlib import cm
-from vc.data_treat.maps import month_dict
+from vc.data_treat.maps import Month
 from vc.datasets.temp_brazil_cities.cities_data import CitiesTempData
 
 
@@ -43,7 +43,7 @@ def braz_cities_choose_data(city_data: CitiesTempData):
     if month_bool:
         # If yes, choose which month.
         month = st.sidebar.select_slider(
-            "Choose month", options=range(1, 13), format_func=month_dict.get
+            "Choose month", options=range(1, 13), format_func=lambda x:Month(x).name
         )
         # Choose start and end years via sliders.
         year_list = city_data.get_year_list()

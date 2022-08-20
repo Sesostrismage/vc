@@ -4,7 +4,7 @@ import plotly.graph_objects as go
 import streamlit as st
 import vc.visuals.streamlit_tools as stt
 from plotly.subplots import make_subplots
-from vc.data_treat import maps
+from vc.data_treat.maps import Month
 from vc.datasets.temp_brazil_cities.cities_data import CitiesTempData
 from vc.visuals.colors import map_color_sequence
 from vc.visuals.plotly_tools import figure as pt_figure
@@ -47,7 +47,7 @@ fig = make_subplots(
 # The layout has to be constructed manually, since setting this with subplots
 # Needs explicit subplot references, so the existing modular code can't be used.
 if month is not None:
-    title = f"Temperature for brazilian cities in {maps.month_dict[month]}"
+    title = f"Temperature for brazilian cities in {Month(month).name}"
 else:
     title = f"Temperature for brazilian cities"
 
