@@ -1,5 +1,6 @@
 from pathlib import Path
 
+import numpy as np
 import plotly.graph_objects as go
 import streamlit as st
 import vc.visuals.plotly_tools.figure as pt_figure
@@ -58,19 +59,26 @@ elif color_option == "Outlier detection":
     # Remove rows where data is missing from any of the cities.
     plot_df.dropna(how="any", axis=0, inplace=True)
 
+    mean_x = plot_df[city_x].mean()
+    mean_y = plot_df[city_y].mean()
+    plot_df["deviation"] = np.sqrt(
+        (plot_df[city_x] - mean_x).pow(2) + (plot_df[city_y] - mean_y).pow(2)
+    ).round(decimals=1)
+
     # Set outlier tolerance via slider.
     outlier_tolerance = st.sidebar.slider(
-        "Outlier tolerance", min_value=0.0, max_value=1.0, step=0.01, value=1.0
+        "Outlier tolerance",
+        min_value=0.0,
+        max_value=plot_df["deviation"].max(),
+        step=0.1,
+        value=1.0,
+        format="%3.1f",
     )
-    # Outlier calculation based on ratio of difference between x and y value.
-    outlier_bool = (plot_df[city_y] - plot_df[city_x]).abs() / plot_df[
-        city_x
-    ] > outlier_tolerance
-    # Make plot series for inliers and outliers.
-    inlier_x = plot_df.loc[~outlier_bool, city_x]
-    inlier_y = plot_df.loc[~outlier_bool, city_y]
-    outlier_x = plot_df.loc[outlier_bool, city_x]
-    outlier_y = plot_df.loc[outlier_bool, city_y]
+    # Outlier calculation based on temperature difference a point and the mean temperature.
+    plot_df["outlier"] = plot_df["deviation"] > outlier_tolerance
+    # Make columns for plotting.
+    plot_df["text"] = ["outlier" if o else "inlier" for o in plot_df["outlier"]]
+    plot_df["color"] = ["red" if o else "lime" for o in plot_df["outlier"]]
 
 
 ####################################################################
@@ -100,55 +108,43 @@ if color_option == "City":
             name="Temperatures",
         )
     )
-    fig.update_layout(title={"text": f"{city_x} vs. {city_y} coloured by {city_color}"})
+    fig.update_layout(
+        title={"text": f"{city_x} vs. {city_y} coloured by {city_color}"},
+        height=800,
+        width=800,
+    )
 
 # If outlier detection, plot inliers and outliers as separate traces with different colours.
 elif color_option == "Outlier detection":
     text_list = [
         f"{idx}<br>"
-        + f"{city_x}: {inlier_x.loc[idx]} deg C<br>"
-        + f"{city_y}: {inlier_y.loc[idx]} deg C<br>"
-        + f"Inlier<br>"
-        + f"Outlier degree: {round(((inlier_y - inlier_x).abs()/inlier_x).loc[idx], 2)}<br>"
-        for idx, _ in inlier_x.iteritems()
+        + f"{city_x}: {row[city_x]} deg C<br>"
+        + f"{city_y}: {row[city_y]} deg C<br>"
+        + f"{row['text']}<br>"
+        + f"Outlier degree: {round(row['deviation'], 1)}<br>"
+        for idx, row in plot_df.iterrows()
     ]
 
     fig.add_trace(
         go.Scattergl(
-            x=inlier_x,
-            y=inlier_y,
+            x=plot_df[city_x],
+            y=plot_df[city_y],
             hoverinfo="text",
             hovertext=text_list,
             mode="markers",
-            marker={"color": "lime"},
-            name="Inliers",
+            marker={"color": plot_df["color"]},
         )
     )
 
-    text_list = [
-        f"{idx}<br>"
-        + f"{city_x}: {outlier_x.loc[idx]} deg C<br>"
-        + f"{city_y}: {outlier_y.loc[idx]} deg C<br>"
-        + f"Outlier<br>"
-        + f"Outlier degree: {round(((outlier_y - outlier_x).abs()/outlier_x).loc[idx], 2)}<br>"
-        for idx, _ in outlier_x.iteritems()
-    ]
-
-    fig.add_trace(
-        go.Scattergl(
-            x=outlier_x,
-            y=outlier_y,
-            hoverinfo="text",
-            hovertext=text_list,
-            mode="markers",
-            marker={"color": "red"},
-            name="Outliers",
-        )
-    )
     fig.update_layout(
         title={
-            "text": f"{city_x} vs. {city_y} with {len(outlier_x)} outliers out of {len(plot_df)} data points @{outlier_tolerance} tolerance"
-        }
+            "text": (
+                f"{city_x} vs. {city_y} with {sum(plot_df['outlier'])} outliers "
+                f"out of {len(plot_df)} data points @{outlier_tolerance} deg C tolerance"
+            )
+        },
+        height=800,
+        width=800,
     )
 
 fig.update_xaxes(title={"text": f"{city_x} temperature [deg C]"})
