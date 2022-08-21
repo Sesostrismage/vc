@@ -1,19 +1,23 @@
 import plotly.express as px
 
-# Dict for all standard colours to be used in this module.
-cdict = {
-    "seasons": {"Summer": "red", "Winter": "blue"},
-    "temperature": {"value": "black", "mean": "#999999", "min": "blue", "max": "red"},
-    "labeling": {
-        "Add": "#00ff00",
-        "Remove": "red",
-        "default": "black",
-        "labeled": "magenta",
-    },
-}
-
 # Function to get any given colour.
 def get_color(cat1: str, cat2: str) -> str:
+    # Dict for all standard colours to be used in this module.
+    cdict = {
+        "seasons": {"Summer": "red", "Winter": "blue"},
+        "temperature": {
+            "value": "black",
+            "mean": "#999999",
+            "min": "blue",
+            "max": "red",
+        },
+        "labeling": {
+            "Add": "#00ff00",
+            "Remove": "red",
+            "default": "black",
+            "labeled": "magenta",
+        },
+    }
     return cdict[cat1][cat2]
 
 
