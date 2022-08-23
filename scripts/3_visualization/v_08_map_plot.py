@@ -1,7 +1,6 @@
 from pathlib import Path
 
 import matplotlib
-import matplotlib.pyplot as plt
 import pandas as pd
 import pydeck as pdk
 import streamlit as st
