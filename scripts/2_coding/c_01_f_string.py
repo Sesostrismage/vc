@@ -14,7 +14,7 @@ str_add = (
 )
 print(str_add)
 
-# String formatting: Automatic typing to str, but inputs at the end:
+# String formatting: Automatic casting to str, but inputs at the end:
 str_format = "A {} ounce bird could not carry a {} pound {}.".format(
     w_bird, w_fruit, fruit
 )
