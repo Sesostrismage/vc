@@ -17,7 +17,7 @@ def multiselect_cities(city_data: CitiesTempData):
     city_idx = st.sidebar.multiselect(
         "Select cities to view",
         options=city_data.get_cities(selection_only=False),
-        default=[city_data.get_cities(selection_only=False)[0]],
+        default=city_data.get_cities(selection_only=False),
     )
     # Check if no cities have been selected and warn the user if this is the case.
     if len(city_idx) == 0:
