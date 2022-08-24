@@ -1,10 +1,11 @@
 import pandas as pd
 import plotly.graph_objects as go
 import vc.visuals.plotly_tools.hovertext as pt_hover
+from vc.datasets.temp_brazil_cities.cities_data import CitiesTempData
 
 
 def braz_cities_temp(
-    fig: go.Figure, plot_df: pd.DataFrame, city_name: str, month: int, cmap
+    fig: go.Figure, city_data: CitiesTempData, month: int, cmap=None
 ) -> go.Figure:
     """
     Creates line traces for standard time plot.
@@ -19,18 +20,32 @@ def braz_cities_temp(
     Returns:
         fig (go.Figure): The input figure with a trace added.
     """
-    text_list = pt_hover.braz_cities_temp(plot_df, city_name, month)
+    plot_df, _ = city_data.get_data(selection_only=True, month=month)
 
-    fig.add_trace(
-        go.Scattergl(
-            x=plot_df.index,
-            y=plot_df[city_name],
-            hoverinfo="text",
-            hovertext=text_list,
-            line={"color": cmap[city_name]},
-            name=city_name,
-        )
-    )
+    for city_name in plot_df.columns:
+        text_list = pt_hover.braz_cities_temp(plot_df, city_name, month)
+
+        if cmap is None:
+            fig.add_trace(
+                go.Scattergl(
+                    x=plot_df.index,
+                    y=plot_df[city_name],
+                    hoverinfo="text",
+                    hovertext=text_list,
+                    name=city_name,
+                )
+            )
+        else:
+            fig.add_trace(
+                go.Scattergl(
+                    x=plot_df.index,
+                    y=plot_df[city_name],
+                    hoverinfo="text",
+                    hovertext=text_list,
+                    line={"color": cmap[city_name]},
+                    name=city_name,
+                )
+            )
 
     return fig
 
