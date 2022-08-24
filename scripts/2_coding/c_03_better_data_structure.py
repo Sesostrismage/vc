@@ -5,6 +5,7 @@ import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
 import streamlit as st
+from vc.data_treat.maps import Month
 from vc.definitions import ROOT_DIR
 
 
@@ -22,21 +23,6 @@ folder_path = ROOT_DIR / "datasets" / "temp_brazil_cities" / "raw_data"
 file_name_list = list(folder_path.iterdir())
 # Empty dataframe to receive data.
 df = pd.DataFrame()
-# Dict of month numbers to month names.
-month_dict = {
-    1: "January",
-    2: "February",
-    3: "March",
-    4: "April",
-    5: "May",
-    6: "June",
-    7: "July",
-    8: "August",
-    9: "September",
-    10: "October",
-    11: "November",
-    12: "December",
-}
 
 # Loop through all file names and load the data.
 for file_name in file_name_list:
@@ -104,7 +90,7 @@ month_bool = st.sidebar.checkbox("Filter by month?", value=False)
 if month_bool:
     # Choose which month.
     month = st.sidebar.select_slider(
-        "Choose month", options=range(1, 13), format_func=month_dict.get
+        "Choose month", options=range(1, 13), format_func=lambda x: Month(x).name
     )
     # Get a list of all usable years in the data.
     year_list = sorted(set([dt.year for dt in df.loc[~na_idx].index]))
@@ -167,7 +153,7 @@ st.dataframe(df.style.highlight_null(null_color="grey"))
 fig = go.Figure()
 # If month is chosen, add it to the plot title.
 if month_bool:
-    title = f"Temperature for brazilian cities in {month_dict[month]}"
+    title = f"Temperature for brazilian cities in {Month(month).name}"
 else:
     title = f"Temperature for brazilian cities"
 
