@@ -1,15 +1,13 @@
 from pathlib import Path
+
+import pandas as pd
 import streamlit as st
-
-from vc.datasets.temp_brazil_cities.cities_data import CitiesTempData
-from vc.visuals.plotly_tools import (
-    figure as pt_figure,
-    shapes as pt_shapes,
-    trace as pt_trace,
-)
-from vc.visuals.colors import map_color_sequence
+import vc.data_treat.cities_data_treat as cdt
+import vc.visuals.plotly_tools.figure as pt_figure
+import vc.visuals.plotly_tools.trace as pt_trace
 import vc.visuals.streamlit_tools as stt
-
+from vc.datasets.temp_brazil_cities.cities_data import CitiesTempData
+from vc.visuals.colors import map_color_sequence
 
 ####################################################################
 # Setup and data loading.
@@ -21,24 +19,24 @@ stt.settings()
 st.title(Path(__file__).name)
 # Object with city temp data.
 city_data = CitiesTempData()
-# Get fixed colormap for the cities.
-cmap = map_color_sequence(city_data.get_cities())
 
 
 ####################################################################
 # User input and calculations.
 ####################################################################
 
-# Get index of cities to plot.
+# Multi-select which cities to plot.
 stt.multiselect_cities(city_data)
-# Choose data ranges and get data.
+
 plot_df, stat_dict, month = stt.braz_cities_choose_data(city_data)
-# Choose whether or not to have a fixed y-axis.
-fixed_yaxis_bool = st.sidebar.checkbox("Fixed y-axis?", value=False)
-# The the type of reference shapes to use.
-ref_type = st.sidebar.selectbox(
-    "Reference data type", options=["Min-max", "Summer-winter"]
-)
+
+show_stat_shapes = st.sidebar.checkbox("Show stat shapes?")
+
+# Choose if you want a fixed x-axis.
+fixed_x_axis = st.sidebar.checkbox("Fixed x-axis?")
+
+# Choose if you want a fixed y-axis.
+fixed_y_axis = st.sidebar.checkbox("Fixed y-axis?")
 
 
 ####################################################################
@@ -48,20 +46,20 @@ ref_type = st.sidebar.selectbox(
 # Create figure.
 fig = pt_figure.braz_cities_temp_per_year(month=month)
 
-if ref_type == "Min-max":
-    # Add shapes for min and max temperatures.
-    fig = pt_shapes.minmax_temp(fig, stat_dict)
-elif ref_type == "Summer-winter":
-    # Add shapes or single background colours for season(s).
-    fig = pt_shapes.summer_winter(fig, plot_df, stat_dict, month=month)
+if show_stat_shapes:
+    # Plot stat shapes.
+    fig = pt_trace.stat_shapes(fig, stat_dict)
 
-# Plot all selected cities.
-for city_name in plot_df.columns:
-    fig = pt_trace.braz_cities_temp(fig, plot_df, city_name, month, cmap)
+# Get a consistent colormap.
+cmap = map_color_sequence(city_data.get_cities(selection_only=False))
+# Plot all selected cities with consistent colors.
+fig = pt_trace.braz_cities_temp(fig, plot_df, month, cmap=cmap)
 
-# Apply fixed y-axis if requested.
-if fixed_yaxis_bool:
+if fixed_x_axis:
+    x_min, x_max = cdt.get_x_axis_extremes(city_data)
+    fig.update_xaxes(range=[x_min, x_max])
+
+if fixed_y_axis:
     fig.update_yaxes(range=[stat_dict["min_total"], stat_dict["max_total"]])
 
-# Show the figure in the Streamlit app.
 st.plotly_chart(fig)

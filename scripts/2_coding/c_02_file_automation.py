@@ -5,7 +5,6 @@ import pandas as pd
 import plotly.graph_objects as go
 import streamlit as st
 from vc.definitions import ROOT_DIR
-from vc.visuals.colors import get_color, map_color_sequence
 
 ####################################################################
 # Setup and data loading.
@@ -15,7 +14,7 @@ from vc.visuals.colors import get_color, map_color_sequence
 st.set_page_config(layout="wide")
 # Title becomes the file name for easy reference to the presentation.
 st.title(Path(__file__).name)
-# Folder path with root of vc dirextory automatically detected.
+# Folder path with root of vc directory automatically detected.
 folder_path = ROOT_DIR / "datasets" / "temp_brazil_cities" / "raw_data"
 # File name list from reading the folder contents.
 file_name_list = list(folder_path.iterdir())
@@ -26,7 +25,6 @@ city_dict = {}
 for file_name in file_name_list:
     # Generate city name from file name.
     city_name = file_name.name[8:-4].replace("_", " ").title()
-
     # Load data into Pandas DataFrame with first row as column names and first column as index names.
     df = pd.read_csv(folder_path / file_name, header=0, index_col=0)
     # Remove pre-generated average columns.
@@ -36,71 +34,68 @@ for file_name in file_name_list:
     # Insert dataframe into file dict.
     city_dict[city_name] = df_crop
 
-# Get fixed colormap.
-cmap = map_color_sequence(city_dict.keys())
-
 
 ####################################################################
 # User input and calculations.
 ####################################################################
 
-# Multi-select which cities to plot.
+# Multi-select files to load, with all files chosen by default from the dict.
 selected_cities_list = st.sidebar.multiselect(
     "Select cities to view",
     options=sorted(list(city_dict.keys())),
     default=sorted(list(city_dict.keys())),
 )
-# Check if any cities have been selected and warn the user if not.
+
+# If no files are chosen, show a warning and stop the program.
 if len(selected_cities_list) == 0:
     st.error("No cities are selected.")
     st.stop()
 
 # Find earliest and latest years that have data.
+# Start with a year that is in all cities' data.
 min_year = 2010
 max_year = 2010
-
+# Loop through all cities and find the earliest and latest year with data.
 for city in selected_cities_list:
     if city in city_dict:
         min_year = min(min_year, city_dict[city].index[0])
         max_year = max(max_year, city_dict[city].index[-1])
 
-# Get all available years from the file and make it into a list.
+# Make a list of all available years.
 year_list = range(min_year, max_year + 1)
-# Selectbox to choose the year.
+# Selectbox to choose the year, default is the latest year.
 year = st.sidebar.selectbox(
     "Choose year to view", options=year_list, index=len(year_list) - 1
 )
-
-# Choose hovermode.
-hovermode = st.sidebar.selectbox("Choose hovermode", options=["x", "closest"])
-
-# Calculate statistical values.
-stat_df = pd.DataFrame()
-
-for city_name in city_dict:
-    if year in city_dict[city_name].index:
-        # Build stat df.
-        stat_df = pd.concat(
-            [stat_df, pd.DataFrame({city_name: city_dict[city_name].loc[year]})], axis=1
-        )
-
-mean_series = stat_df.mean(axis=1)
-min_series = stat_df.min(axis=1)
-max_series = stat_df.max(axis=1)
+# Choose whether or not to show the mean value line.
+show_mean_bool = st.sidebar.checkbox("Show mean value?")
+# If yes, build the mean dataframe.
+if show_mean_bool:
+    mean_df = pd.DataFrame()
+    # Loop through all cities.
+    for file_name in city_dict:
+        if year in city_dict[file_name].index:
+            # Build mean df.
+            mean_df = pd.concat(
+                [mean_df, pd.DataFrame({file_name: city_dict[file_name].loc[year]})],
+                axis=1,
+            )
+    # Calculate the mean series.
+    mean_series = mean_df.mean(axis=1)
 
 
 ####################################################################
 # Plotting.
 ####################################################################
 
-# Create figure.
+# Create a Plotly figure.
 fig = go.Figure()
-# Set up the layout.
+# Layout.
 fig.update_xaxes(title="Datetime")
 fig.update_yaxes(title="Temperature [deg C]")
 fig.update_layout(
     title=f"Temperature for brazilian cities in {year}",
-    hovermode=hovermode,
+    hovermode="x",
     height=800,
     width=1400,
     plot_bgcolor="#ffffff",
@@ -121,63 +116,24 @@ axis_dict = {
 fig.update_xaxes(axis_dict)
 fig.update_yaxes(axis_dict)
 
-# Handle missing data.
-# Find indices where the series doesn't have null values.
-valid_idx = min_series.notnull()
-# Use those indices to put together x and y value lists.
-x_part = [col for idx, col in enumerate(df_crop.columns) if valid_idx[idx]]
-x = x_part + list(reversed(x_part))
-
-y_mean_part = [val for idx, val in enumerate(mean_series) if valid_idx[idx]]
-y_part = [val for idx, val in enumerate(min_series) if valid_idx[idx]]
-y_min = y_part + list(reversed(y_mean_part))
-y_part = [val for idx, val in enumerate(max_series) if valid_idx[idx]]
-y_max = y_part + list(reversed(y_mean_part))
-
-# Plot the min and max areas as filled polygons.
-fig.add_trace(
-    go.Scatter(
-        x=x,
-        y=y_min,
-        fill="toself",
-        mode="none",
-        marker={"color": get_color("temperature", "min")},
-        showlegend=False,
-        hoverinfo="none",
-    )
-)
-fig.add_trace(
-    go.Scatter(
-        x=x,
-        y=y_max,
-        fill="toself",
-        mode="none",
-        marker={"color": get_color("temperature", "max")},
-        showlegend=False,
-        hoverinfo="none",
-    )
-)
-
-# Print all selected cities.
+# Plot each chosen city if it has data.
 for city_name in (city for city in city_dict if city in selected_cities_list):
-    # Plot data from selected year if present.
     if year in city_dict[city_name].index:
-        # Create hovertext.
-        text_list = [
-            f"{city_name}, {idx.title()} {year}<br>" + f"{item} deg C"
-            for idx, item in city_dict[city_name].loc[year].iteritems()
-        ]
-
+        # Plot data from selected year if present.
+        # Name the trace after the city.
         fig.add_trace(
             go.Scattergl(
                 x=city_dict[city_name].columns,
                 y=city_dict[city_name].loc[year],
-                hoverinfo="text",
-                hovertext=text_list,
-                line={"color": cmap[city_name]},
                 name=city_name,
             )
         )
+
+# Plot mean line if chosen.
+if show_mean_bool:
+    fig.add_trace(
+        go.Scattergl(x=mean_series.index, y=mean_series, name="All-city mean")
+    )
 
 # Show the figure in the Streamlit app.
 st.plotly_chart(fig)

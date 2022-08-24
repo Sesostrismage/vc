@@ -139,7 +139,7 @@ line_source.name = "Lines"
 
 # Create the figure with formatting and plot tools.
 fig = figure(
-    title="Density plot",
+    title="City temperature plot",
     tools="box_zoom,reset",
     x_axis_type="datetime",
     plot_width=width_standard,
