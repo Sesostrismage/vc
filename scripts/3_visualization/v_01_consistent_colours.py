@@ -25,16 +25,10 @@ city_data = CitiesTempData()
 
 # Multi-select which cities to plot.
 stt.multiselect_cities(city_data)
-
+# Select data to plot and get the resulting data.
 plot_df, stat_dict, month = stt.braz_cities_choose_data(city_data)
-
 # Choose whether or not to show the mean value line.
 show_mean_bool = st.sidebar.checkbox("Show mean value?")
-
-# # If yes, build the mean series.
-if show_mean_bool:
-    # Create statistical series.
-    mean_series = plot_df.mean(axis=1)
 
 
 ####################################################################
@@ -46,9 +40,9 @@ fig = pt_figure.braz_cities_temp_per_year(month=month)
 # Get a consistent colormap.
 cmap = map_color_sequence(city_data.get_cities(selection_only=False))
 # Plot all selected cities with consistent colors.
-fig = pt_trace.braz_cities_temp(fig, city_data, month, cmap=cmap)
+fig = pt_trace.braz_cities_temp(fig, plot_df, month, cmap=cmap)
 # Plot statistical series if chosen.
 if show_mean_bool:
-    pt_trace.mean_series(fig, mean_series)
+    pt_trace.stat_lines(fig, stat_dict, ["mean"])
 # Show the figure in the Streamlit app.
 st.plotly_chart(fig)

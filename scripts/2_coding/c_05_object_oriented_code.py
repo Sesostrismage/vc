@@ -30,11 +30,6 @@ plot_df, stat_dict, month = stt.braz_cities_choose_data(city_data)
 # Choose whether or not to show the mean value line.
 show_mean_bool = st.sidebar.checkbox("Show mean value?")
 
-# # If yes, build the mean series.
-if show_mean_bool:
-    # Create statistical series.
-    mean_series = plot_df.mean(axis=1)
-
 
 ####################################################################
 # Plotting.
@@ -43,9 +38,9 @@ if show_mean_bool:
 # Create figure.
 fig = pt_figure.braz_cities_temp_per_year(month=month)
 # Plot all selected cities.
-fig = pt_trace.braz_cities_temp(fig, city_data, month)
+fig = pt_trace.braz_cities_temp(fig, plot_df, month)
 # Plot statistical series if chosen.
 if show_mean_bool:
-    pt_trace.mean_series(fig, mean_series)
+    pt_trace.stat_lines(fig, stat_dict, ["mean"])
 # Show the figure in the Streamlit app.
 st.plotly_chart(fig)
