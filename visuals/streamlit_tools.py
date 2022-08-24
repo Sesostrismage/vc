@@ -1,4 +1,5 @@
 import matplotlib.pyplot as plt
+import pandas as pd
 import plotly.colors
 import streamlit as st
 from matplotlib import cm
@@ -26,6 +27,19 @@ def multiselect_cities(city_data: CitiesTempData):
     city_data.set_city_selection(city_idx)
 
 
+def multiselect_cities_old_style(df: pd.DataFrame) -> list:
+    # Multi-select which cities to plot.
+    city_idx = st.sidebar.multiselect(
+        "Select cities to view", options=list(df.columns), default=list(df.columns)
+    )
+    # Check if any cities have been selected and warn the user if not.
+    if len(city_idx) == 0:
+        st.error("No cities are selected.")
+        st.stop()
+
+    return city_idx
+
+
 def braz_cities_choose_data(city_data: CitiesTempData):
     """
     Choose the date part of the data.
@@ -43,7 +57,7 @@ def braz_cities_choose_data(city_data: CitiesTempData):
     if month_bool:
         # If yes, choose which month.
         month = st.sidebar.select_slider(
-            "Choose month", options=range(1, 13), format_func=lambda x:Month(x).name
+            "Choose month", options=range(1, 13), format_func=lambda x: Month(x).name
         )
         # Choose start and end years via sliders.
         year_list = city_data.get_year_list()

@@ -6,7 +6,7 @@ import pandas as pd
 import plotly.graph_objects as go
 import streamlit as st
 from vc.definitions import ROOT_DIR
-from vc.visuals.colors import get_color, map_color_sequence
+
 
 ####################################################################
 # Setup and data loading.
@@ -37,8 +37,6 @@ month_dict = {
     11: "November",
     12: "December",
 }
-# Dict of which months belong to summer and winter.
-season_dict = {"Summer": [1, 2, 3, 12], "Winter": [6, 7, 8, 9]}
 
 # Loop through all file names and load the data.
 for file_name in file_name_list:
@@ -58,9 +56,6 @@ for file_name in file_name_list:
     df = pd.concat([df, pd.DataFrame({city_name: stacked_df})], axis=1)
 
 df.sort_index(inplace=True)
-
-# Get fixed colormap.
-cmap = map_color_sequence(df.columns)
 
 
 ####################################################################
@@ -91,7 +86,7 @@ for file_name in file_name_list:
 
 # Multi-select which cities to plot.
 city_idx = st.sidebar.multiselect(
-    "Select cities to view", options=list(df.columns), default=[df.columns[0]]
+    "Select cities to view", options=list(df.columns), default=list(df.columns)
 )
 # Check if any cities have been selected and warn the user if not.
 if len(city_idx) == 0:
@@ -201,27 +196,10 @@ fig.update_yaxes(axis_dict)
 
 # Plot all selected cities.
 for city_name in plot_df.columns:
-    if month_bool:
-        # If a month is chosen, add that month to the hovertext.
-        text_list = [
-            f"{city_name} - {month_dict[month]} {idx.year}<br>"
-            + f"{row[city_name]} deg C"
-            for idx, row in plot_df.iterrows()
-        ]
-    else:
-        # Else just city name, date and temperature.
-        text_list = [
-            f"{city_name} - {idx}<br>" + f"{row[city_name]} deg C"
-            for idx, row in plot_df.iterrows()
-        ]
-
     fig.add_trace(
         go.Scattergl(
             x=plot_df.index,
             y=plot_df[city_name],
-            hoverinfo="text",
-            hovertext=text_list,
-            line={"color": cmap[city_name]},
             name=city_name,
         )
     )
