@@ -29,6 +29,8 @@ stt.multiselect_cities(city_data)
 plot_df, stat_dict, month = stt.braz_cities_choose_data(city_data)
 # Choose whether or not to show the mean value line.
 show_mean_bool = st.sidebar.checkbox("Show mean value?")
+# Choose hovermode.
+hovermode = st.sidebar.selectbox("Select hovermode", options=["x", "closest"])
 
 
 ####################################################################
@@ -44,5 +46,8 @@ fig = pt_trace.braz_cities_temp(fig, plot_df, month, cmap=cmap)
 # Plot statistical series if chosen.
 if show_mean_bool:
     pt_trace.stat_lines(fig, stat_dict, ["mean"])
+
+# Set the desired hovermode.
+fig.update_layout(hovermode=hovermode)
 # Show the figure in the Streamlit app.
 st.plotly_chart(fig)
