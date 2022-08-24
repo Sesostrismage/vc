@@ -5,7 +5,7 @@ from vc.datasets.temp_brazil_cities.cities_data import CitiesTempData
 
 
 def braz_cities_temp(
-    fig: go.Figure, city_data: CitiesTempData, month: int, cmap=None
+    fig: go.Figure, plot_df: pd.DataFrame, month: int, cmap=None
 ) -> go.Figure:
     """
     Creates line traces for standard time plot.
@@ -20,8 +20,6 @@ def braz_cities_temp(
     Returns:
         fig (go.Figure): The input figure with a trace added.
     """
-    plot_df, _ = city_data.get_data(selection_only=True, month=month)
-
     for city_name in plot_df.columns:
         text_list = pt_hover.braz_cities_temp(plot_df, city_name, month)
 
@@ -63,6 +61,10 @@ def braz_cities_temp_old_style(fig: go.Figure, plot_df: pd.DataFrame) -> go.Figu
     return fig
 
 
-def mean_series(fig: go.Figure, mean_series: pd.Series) -> go.Figure:
-    fig.add_trace(go.Scatter(x=mean_series.index, y=mean_series, name="All-city mean"))
+def stat_lines(fig: go.Figure, stat_dict: dict, selection: list) -> go.Figure:
+    for stat in selection:
+        fig.add_trace(
+            go.Scatter(x=stat_dict[stat].index, y=stat_dict[stat], name=f"All-city {stat}")
+        )
+
     return fig
