@@ -4,7 +4,7 @@ import plotly.express as px
 def get_color(cat1: str, cat2: str) -> str:
     # Dict for all standard colours to be used in this module.
     cdict = {
-        "seasons": {"Summer": "red", "Winter": "blue"},
+        "seasons": {"summer": "red", "winter": "blue"},
         "temperature": {
             "value": "black",
             "mean": "#999999",

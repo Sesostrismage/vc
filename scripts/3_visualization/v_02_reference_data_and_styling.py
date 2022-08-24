@@ -32,7 +32,13 @@ plot_df, stat_dict, month = stt.braz_cities_choose_data(city_data)
 # Choose how to display reference data.
 ref_option = st.sidebar.selectbox(
     "Choose reference display",
-    options=["None", "Mean line", "Min-mean-max lines", "Min-mean-max shapes"],
+    options=[
+        "None",
+        "Mean line",
+        "Min-mean-max lines",
+        "Min-mean-max shapes",
+        "Seasons",
+    ],
 )
 
 # If reference lines are shown, you can choose to have them less obtrusive.
@@ -59,9 +65,13 @@ elif ref_option == "Min-mean-max lines":
         fig, stat_dict, ["mean", "min", "max"], discreet_stats=discreet_stats
     )
 
-# Case when reference shapes are chosen.
+# Case when all reference shapes are chosen.
 elif ref_option == "Min-mean-max shapes":
     fig = pt_trace.stat_shapes(fig, stat_dict)
+
+# Case when seasons are chosen.
+elif ref_option == "Seasons":
+    fig = pt_trace.season_shapes(fig, plot_df, month=month)
 
 # Get a consistent colormap.
 cmap = map_color_sequence(city_data.get_cities(selection_only=False))

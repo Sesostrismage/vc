@@ -1,3 +1,4 @@
+import datetime
 import pandas as pd
 import plotly.graph_objects as go
 import vc.visuals.plotly_tools.hovertext as pt_hover
@@ -124,5 +125,112 @@ def stat_shapes(fig, stat_dict: dict) -> go.Figure:
             hoverinfo="none",
         )
     )
+
+    return fig
+
+
+def season_shapes(
+    fig: go.Figure, plot_df: pd.DataFrame, month: int = None
+) -> go.Figure:
+    # Dict of which months belong to summer and winter.
+    season_dict = {"summer": [1, 2, 3, 12], "winter": [6, 7, 8, 9]}
+
+    if month is None:
+        # Empty DataFrame to take info on season shapes.
+        season_df = pd.DataFrame(columns=["start", "end", "season"])
+
+        # Prepare for loop.
+        start_date = plot_df.index[0]
+        prev_date = plot_df.index[0]
+        season = None
+
+        # Loop through all dates.
+        for date in plot_df.index:
+            # If season is None, check if current month is in either season.
+            if season is None:
+                for s in season_dict:
+                    if date.month in season_dict[s]:
+                        season = s
+                        start_date = date
+            # If the date gap is too large due to missing data,
+            # end the season at the previous date.
+            elif date - prev_date > datetime.timedelta(weeks=26):
+                season_df = pd.concat(
+                    [
+                        season_df,
+                        pd.DataFrame(
+                            {
+                                "start": [start_date],
+                                "end": [prev_date],
+                                "season": [season],
+                            }
+                        ),
+                    ]
+                )
+                season = None
+            # If the month is not in a season, end the season.
+            elif date.month not in season_dict[season]:
+                season_df = pd.concat(
+                    [
+                        season_df,
+                        pd.DataFrame(
+                            {"start": [start_date], "end": [date], "season": [season]}
+                        ),
+                    ]
+                )
+                season = None
+
+            prev_date = date
+
+        # Handling if the data ends in a season.
+        if season is not None:
+            season_df = pd.concat(
+                [
+                    season_df,
+                    pd.DataFrame(
+                        {
+                            "start": [start_date],
+                            "end": [plot_df.index[-1]],
+                            "season": [season],
+                        }
+                    ),
+                ]
+            )
+
+        # Create season color boxes.
+        shape_list = []
+
+        y_min = plot_df.min().min()
+        y_max = plot_df.max().max()
+
+        # Create rectangles to indicate seasons.
+        if len(season_df) > 0:
+            for _, row in season_df.iterrows():
+                shape = go.layout.Shape(
+                    type="rect",
+                    x0=row["start"],
+                    y0=y_min,
+                    x1=row["end"],
+                    y1=y_max,
+                    line={"width": 0},
+                    fillcolor=get_color("seasons", row["season"]),
+                    opacity=0.25,
+                    layer="below",
+                )
+
+                shape_list.append(shape)
+
+        fig.update_layout(shapes=shape_list)
+
+    # Else set plot background colour to the season.
+    else:
+        if month in season_dict["summer"]:
+            color = "rgb(255, 196, 196)"
+        elif month in season_dict["winter"]:
+            color = "rgb(196, 196, 255)"
+        else:
+            color = "white"
+
+        fig.update_layout(plot_bgcolor=color)
 
     return fig
