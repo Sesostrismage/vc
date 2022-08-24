@@ -1,5 +1,6 @@
 import pandas as pd
 import streamlit as st
+from vc.datasets.temp_brazil_cities.cities_data import CitiesTempData
 
 
 def filter_cities_data_by_month(
@@ -27,3 +28,11 @@ def filter_cities_data_by_month(
     plot_df = city_slice_df.loc[dt_idx & ~na_idx, city_idx]
 
     return plot_df
+
+
+def get_x_axis_extremes(city_data: CitiesTempData) -> dict:
+    # Get the smallest and largest datetimes, regardless of city selection.
+    datetimes = city_data.get_datetimes(selection_only=False)
+    x_min = datetimes.min()
+    x_max = datetimes.max()
+    return x_min, x_max
