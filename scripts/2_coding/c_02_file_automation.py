@@ -83,8 +83,6 @@ if show_mean_bool:
     # Calculate the mean series.
     mean_series = mean_df.mean(axis=1)
 
-    st.dataframe(mean_df)
-
 
 ####################################################################
 # Plotting.
