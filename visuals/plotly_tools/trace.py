@@ -61,6 +61,19 @@ def braz_cities_temp_old_style(fig: go.Figure, plot_df: pd.DataFrame) -> go.Figu
     return fig
 
 
+def mean_line_old_style(fig: go.Figure, mean_series: pd.Series) -> go.Figure:
+    fig.add_trace(
+        go.Scatter(
+            x=mean_series.index,
+            y=mean_series,
+            line={"color": get_color("temperature", "mean")},
+            name=f"All-city mean",
+        )
+    )
+
+    return fig
+
+
 def stat_lines(
     fig: go.Figure, stat_dict: dict, selection: list, discreet_stats: bool = False
 ) -> go.Figure:

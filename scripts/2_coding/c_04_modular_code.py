@@ -65,7 +65,7 @@ show_mean_bool = st.sidebar.checkbox("Show mean value?")
 # If yes, build the mean series.
 if show_mean_bool:
     # Create statistical series.
-    mean_series = df.loc[dt_idx].mean(axis=1)
+    mean_series = plot_df.mean(axis=1)
 
 
 ####################################################################
@@ -78,6 +78,6 @@ fig = pt_figure.braz_cities_temp_per_year(month=month)
 fig = pt_trace.braz_cities_temp_old_style(fig, plot_df)
 # Plot statistical series if chosen.
 if show_mean_bool:
-    pt_trace.mean_series(fig, mean_series)
+    pt_trace.mean_line_old_style(fig, mean_series)
 # Show the figure in the Streamlit app.
 st.plotly_chart(fig)
