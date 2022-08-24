@@ -1,7 +1,7 @@
 import pandas as pd
 import plotly.graph_objects as go
 import vc.visuals.plotly_tools.hovertext as pt_hover
-from vc.datasets.temp_brazil_cities.cities_data import CitiesTempData
+from vc.visuals.colors import get_color
 
 
 def braz_cities_temp(
@@ -13,7 +13,6 @@ def braz_cities_temp(
     Args:
         fig (go.Figure): Existing Plotly figure.
         plot_df (pd.DataFrame): Temperature data.
-        city_name (str): Name of the city to plot.
         month (int): Month to plot, if any.
         cmap ([type]): Colormap.
 
@@ -61,10 +60,69 @@ def braz_cities_temp_old_style(fig: go.Figure, plot_df: pd.DataFrame) -> go.Figu
     return fig
 
 
-def stat_lines(fig: go.Figure, stat_dict: dict, selection: list) -> go.Figure:
+def stat_lines(
+    fig: go.Figure, stat_dict: dict, selection: list, discreet_stats: bool = False
+) -> go.Figure:
+    # This sets the opacity of the reference lines.
+    if discreet_stats:
+        opacity = 0.25
+    else:
+        opacity = 1
+
     for stat in selection:
         fig.add_trace(
-            go.Scatter(x=stat_dict[stat].index, y=stat_dict[stat], name=f"All-city {stat}")
+            go.Scatter(
+                x=stat_dict[stat].index,
+                y=stat_dict[stat],
+                line={"color": get_color("temperature", stat)},
+                opacity=opacity,
+                name=f"All-city {stat}",
+            )
         )
+
+    return fig
+
+
+def stat_shapes(fig, stat_dict: dict) -> go.Figure:
+    # Handle missing data.
+    # Find indices where the series doesn't have null values.
+    valid_idx = stat_dict["mean"].notnull().index
+    # Use those indices to put together x and y value lists.
+    # Add all indices again in reverse order to create a bounded figure.
+    x = list(valid_idx) + list(reversed(valid_idx))
+
+    # Build the min shape from the mean and min series.
+    y_min = list(stat_dict["mean"].loc[valid_idx]) + list(
+        reversed(stat_dict["min"].loc[valid_idx])
+    )
+
+    # Build the max shape from the mean and max series.
+    y_max = list(stat_dict["mean"].loc[valid_idx]) + list(
+        reversed(stat_dict["max"].loc[valid_idx])
+    )
+
+    # Plot the min and max areas as filled polygons.
+    fig.add_trace(
+        go.Scatter(
+            x=x,
+            y=y_min,
+            fill="toself",
+            mode="none",
+            marker={"color": get_color("temperature", "min")},
+            showlegend=False,
+            hoverinfo="none",
+        )
+    )
+    fig.add_trace(
+        go.Scatter(
+            x=x,
+            y=y_max,
+            fill="toself",
+            mode="none",
+            marker={"color": get_color("temperature", "max")},
+            showlegend=False,
+            hoverinfo="none",
+        )
+    )
 
     return fig
